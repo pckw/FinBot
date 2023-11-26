@@ -14,14 +14,14 @@ FinBot allows you to chat with an uploaded financial report, like annual and qua
 ### Flowchart and Prototype
 ![Flowchart](./FlowChart.png)
 
-![Prototyp](./FlowChart.png)
+![Prototyp](./Prototype.png)
 
 
 ## How do run the latest FinBot version localy
 
 Clone the repository
 ```
-git clone ...
+git clone https://github.com/pckw/FinBot.git
 ````
 
 Set up a local environment, activate it and install the packages listed in requirements.txt. For exmaple using python venv
