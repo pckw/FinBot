@@ -1,0 +1,13 @@
+# environment
+venv
+
+# environment variables
+.env
+
+# vector database
+data/*
+
+
+__pycache__
+.DS_Store
+*swp
