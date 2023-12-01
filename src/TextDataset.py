@@ -9,6 +9,6 @@ class TextDataset():
         # load the document
         loader = PyPDFLoader(self.path)
         documents = loader.load()
-        text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+        text_splitter = CharacterTextSplitter(separator="\n", chunk_size=1000, chunk_overlap=200)
         documents = text_splitter.split_documents(documents)
         return documents

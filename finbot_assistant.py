@@ -13,6 +13,9 @@ load_dotenv('.env')
 file = "./docs/Lillebräu_2021.pdf"
 documents = TextDataset(file).load()
 
+# print(len(documents))
+# print(documents[0])
+# exit()
 # Initialize vecordb
 embedding = OpenAIEmbeddings()
 vectordb = chromaDB.vectordb(documents,
@@ -26,7 +29,7 @@ model_name='gpt-3.5-turbo'
 finbot_assistant = chatGPT_assistant(vectordb=vectordb,
                                      model_name=model_name,
                                      temperature=0,
-                                     k=3)
+                                     k=1)
 
 yellow = "\033[0;33m"
 green = "\033[0;32m"
