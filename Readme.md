@@ -34,13 +34,13 @@ Create .env in the main directory and add your OpenAI API key
 ```
 OPENAI_API_KEY=sk-
 ```
-
-Run finbot in your terminal without any user interface
+There are two ways to run Finbot:\
+- Run finbot in your terminal without any user interface
 ```python
 python finbot_assistant.py
 ```
 
-Use FinBot through the provided userinterface
+- Use FinBot through the provided userinterface
 ```python
 python run_finbot.py
 ```
