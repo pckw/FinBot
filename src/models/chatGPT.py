@@ -51,11 +51,11 @@ class chatGPT_assistant():
                 retriever=self.vectordb.as_retriever(search_kwargs={'k': self.k}),
                 question_generator=question_generator,
                 combine_docs_chain=doc_chain,
+                rephrase_question=False,
                 return_source_documents=False,
                 return_generated_question=False,
                 verbose=True
             )
         result = chain({"question": query, "chat_history": self.chat_history})
         self.chat_history.append((query, result["answer"])) # add query and result
-        print(self.chat_history)
         return result
