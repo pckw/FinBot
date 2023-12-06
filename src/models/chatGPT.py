@@ -3,6 +3,7 @@ from langchain.llms import OpenAI
 from dotenv import load_dotenv
 from langchain.chains.qa_with_sources import load_qa_with_sources_chain
 from langchain.prompts import PromptTemplate
+from langchain.memory import ConversationBufferMemory
 
 load_dotenv('.env')
 
@@ -13,8 +14,9 @@ class chatGPT_assistant():
         self.temperature = temperature
         self.k = k
         self.vectordb = vectordb
+        self.chat_history = []
     
-    def query(self, query, chat_history=[]):
+    def query(self, query):
         # open prompt templates
         with open("prompt_templates/few_shot_doc_prompt_en_short.txt") as f:
             template_few_shot_doc = f.read()
@@ -33,24 +35,27 @@ class chatGPT_assistant():
         # Define llms
         llm_for_chat = OpenAI(temperature=self.temperature,
                               model=self.model_name)
+        
         llm_for_doc_chain = OpenAI(temperature=0)
 
         # Define chains
-        question_generator = LLMChain(llm=llm_for_chat,
+        question_generator = LLMChain(llm=llm_for_doc_chain,
                                       prompt=SUMMARY_PROMPT)
         doc_chain = load_qa_with_sources_chain(llm_for_doc_chain,
                                                chain_type="stuff",
                                                verbose=True,
                                                prompt=QA_PROMPT,
                                                document_prompt=DOC_PROMPT)
-
+        
         chain = ConversationalRetrievalChain(
                 retriever=self.vectordb.as_retriever(search_kwargs={'k': self.k}),
                 question_generator=question_generator,
                 combine_docs_chain=doc_chain,
-                return_source_documents=True,
-                return_generated_question=True,
+                return_source_documents=False,
+                return_generated_question=False,
                 verbose=True
             )
-        chat_history = []
-        return chain({"question": query, "chat_history": chat_history})
+        result = chain({"question": query, "chat_history": self.chat_history})
+        self.chat_history.append((query, result["answer"])) # add query and result
+        print(self.chat_history)
+        return result
