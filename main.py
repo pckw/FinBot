@@ -1,8 +1,9 @@
 from langchain.embeddings import OpenAIEmbeddings
-from src.models.chatGPT import chatGPT_assistant
+from src.models.chatGPT import chatGPT_assistant, chatGPT_extractor
 from src.vectordb.chroma import chromaDB
 from src.TextDataset import TextDataset
 import gradio as gr
+import json
 
 
 def run_emmbedding(file):
@@ -26,9 +27,21 @@ def get_response(message, chat_history, model_name, temperature):
                                          model_name=model_name,
                                          temperature=temperature,
                                          k=3)
-    result = finbot_assistant.query(message, chat_history)
+    result = finbot_assistant.query(message)
     chat_history.append((message, result["answer"]))
     return "", chat_history
+
+
+def update_key_properties():
+    with open('key_properties.json','r') as f:
+        key_properties = json.load(f)
+    vectordb = read_vectordb()
+    key_property_extractor = chatGPT_extractor(vectordb=vectordb)
+    extracted_key_properties = key_property_extractor.extract_entities(entities=key_properties)
+    print(extracted_key_properties)
+    return extracted_key_properties['Name'],\
+           extracted_key_properties['Headquarters'],\
+           extracted_key_properties['Number of employees']
 
 
 def main():
@@ -52,14 +65,18 @@ def main():
                 temp = gr.Slider(label="Temperature", value=0)
                 gr.Markdown("### Key properties")
                 name = gr.Textbox(label="Name of the company")
-                period = gr.Textbox(label="Report period")
+                hq = gr.Textbox(label="Headquarter")
                 employee = gr.Textbox(label="Number of employee")
+                update = gr.Button(value="Update key properties")
                 #manager = gr.Textbox(label="Managing director(s)")
                 #revenue = gr.Textbox(label="Revenue/Loss")
         msg.submit(fn=get_response,
                    inputs=[msg, chat_history, model, temp],
                    outputs=[msg, chat_history])
         upload.click(fn=run_emmbedding, inputs=file)
+        update.click(fn=update_key_properties,
+                     inputs=[],
+                     outputs=[name, hq, employee])
     iface.launch()
 
 
