@@ -30,7 +30,7 @@ model_name='gpt-3.5-turbo'
 finbot_assistant = chatGPT_assistant(vectordb=vectordb,
                                      model_name=model_name,
                                      temperature=0,
-                                     k=1)
+                                     k=3)
 
 yellow = "\033[0;33m"
 green = "\033[0;32m"
@@ -47,6 +47,6 @@ while True:
         sys.exit()
     if query == '':
         continue
-    result = finbot_assistant.query(query, chat_history)
+    result = finbot_assistant.query(query)
     print(f"{white}Answer: " + result["answer"])
-    chat_history.append((query, result["answer"]))
+    #chat_history.append((query, result["answer"]))
