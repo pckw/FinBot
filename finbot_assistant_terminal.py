@@ -18,10 +18,11 @@ documents = TextDataset(file).load()
 # exit()
 # Initialize vecordb
 embedding = OpenAIEmbeddings()
-vectordb = chromaDB.vectordb(documents,
-                             embedding,
-                             persist_directory='./data')
-vectordb.persist()
+# vectordb = chromaDB.create_vectordb(documents,
+#                              embedding,
+#                              persist_directory='./data')
+# vectordb.persist()
+vectordb = chromaDB.read_vectordb(embedding, persist_directory='./data')
 
 # Initialize the assistant
 model_name='gpt-3.5-turbo'
