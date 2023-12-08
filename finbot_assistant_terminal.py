@@ -37,6 +37,7 @@ finbot_assistant = chatGPT_assistant(vectordb=vectordb,
 extractor = chatGPT_extractor(vectordb=vectordb)
 extracted_key_properties = extractor.extract_entities(entities=key_properties)
 
+
 yellow = "\033[0;33m"
 green = "\033[0;32m"
 white = "\033[0;39m"
@@ -57,6 +58,7 @@ while True:
         sys.exit()
     if query == '':
         continue
-    result = finbot_assistant.query(query, chat_history)
+
+    result = finbot_assistant.query(query)
     print(f"{white}Answer: " + result["answer"])
-    chat_history.append((query, result["answer"]))
+    #chat_history.append((query, result["answer"]))
