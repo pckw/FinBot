@@ -2,8 +2,8 @@ import os
 import sys
 from langchain.embeddings import OpenAIEmbeddings
 from dotenv import load_dotenv
-
-from src.models.chatGPT import chatGPT_assistant
+import json
+from src.models.chatGPT import chatGPT_assistant, chatGPT_extractor
 from src.vectordb.chroma import chromaDB
 from src.TextDataset import TextDataset
 
@@ -12,6 +12,8 @@ load_dotenv('.env')
 # Load documents
 file = "./docs/Lillebräu_2021.pdf"
 documents = TextDataset(file).load()
+with open('key_properties.json','r') as f:
+    key_properties = json.load(f)
 
 # print(len(documents))
 # print(documents[0])
@@ -30,7 +32,11 @@ model_name='gpt-3.5-turbo'
 finbot_assistant = chatGPT_assistant(vectordb=vectordb,
                                      model_name=model_name,
                                      temperature=0,
-                                     k=3)
+                                     k=1)
+
+extractor = chatGPT_extractor(vectordb=vectordb)
+extracted_key_properties = extractor.extract_entities(entities=key_properties)
+
 
 yellow = "\033[0;33m"
 green = "\033[0;32m"
@@ -40,6 +46,11 @@ chat_history = []
 print(f"{yellow}---------------------------------------------------------------------------------")
 print('Welcome to the FinBot. You are now ready to start interacting with your documents')
 print('---------------------------------------------------------------------------------')
+print(' ')
+print('Derived key properties:')
+for i in extracted_key_properties:
+    print(f"{i}: {extracted_key_properties[i]}")
+print(' ')
 while True:
     query = input(f"{green}Prompt: ")
     if query == "exit" or query == "quit" or query == "q" or query == "f":
@@ -47,6 +58,7 @@ while True:
         sys.exit()
     if query == '':
         continue
+
     result = finbot_assistant.query(query)
     print(f"{white}Answer: " + result["answer"])
     #chat_history.append((query, result["answer"]))

@@ -1,10 +1,9 @@
 from langchain.chains import ConversationalRetrievalChain, LLMChain
 from langchain.llms import OpenAI
+from langchain.chat_models import ChatOpenAI
 from dotenv import load_dotenv
 from langchain.chains.qa_with_sources import load_qa_with_sources_chain
 from langchain.prompts import PromptTemplate
-from langchain.memory import ConversationBufferMemory
-
 load_dotenv('.env')
 
 
@@ -59,3 +58,34 @@ class chatGPT_assistant():
         result = chain({"question": query, "chat_history": self.chat_history})
         self.chat_history.append((query, result["answer"])) # add query and result
         return result
+    
+class chatGPT_extractor():
+        def __init__(self, vectordb, model_name='gpt-3.5-turbo', k=1) -> None:
+            self.model_name = model_name
+            self.k = k
+            self.retriever = vectordb.as_retriever(search_type="similarity", search_kwargs={"k": k})
+
+        def extract_single_entity(self, entity:str, description:str, retriever, llm) -> str:
+            retrieved_docs = self.retriever.invoke(entity)
+            prompt_template = PromptTemplate.from_template(
+                """Extract the following information from the context. Answer very briefly and as short as possible.\n
+                {entity}: {description}\n
+                Context:{context}\n\n
+                
+                {entity}:"""
+            )
+            prompt = prompt_template.format_prompt(entity=entity,
+                                                   description=description,
+                                                   context=retrieved_docs[0].page_content)
+            response = llm(prompt.to_messages()).content
+            return response
+
+        def extract_entities(self, entities: dict) -> dict:
+            llm = ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0)
+            result = {}
+            for i in entities:
+                result[i] = self.extract_single_entity(entity=i,
+                                                      description=entities[i],
+                                                      retriever=self.retriever,
+                                                      llm=llm)
+            return result
