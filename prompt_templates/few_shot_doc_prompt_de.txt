@@ -1,0 +1,43 @@
+"""Given the following extracted parts of a long document and a question, create a final answer with references ("SOURCES"). 
+            If you don't know the answer, just say that you don't know. Don't try to make up an answer.
+            ALWAYS return a "SOURCES" part in your answer.
+
+            QUESTION: Wie hoch sind die Aktiva zum Anfang des Berichtszeiraum?
+            =========
+            Content: Aktiva\n31.12.2021\nEUR31.12.2020\nEUR\nA. Anlagevermögen 1.275.997,16 1.327.419,00\nI. Sachanlagen 1.275.997,16 1.327.419,00\nB. Umlaufvermögen 504.285,42 501.896,12\nI. Vorräte 245.247,38 166.878,95\nII. Forderungen und sonstige Vermögensgegenstände 141.579,18 112.321,39\ndavon gegen Gesellschafter 8.420,87 9.488,39\nIII. Kassenbestand, Bundesbankguthaben, Guthaben bei Kreditinstituten und Schecks 117.458,86 222.695,78\nC. Rechnungsabgrenzungsposten 9.462,82 7.711,00\nD. Nicht durch Eigenkapital gedeckter Fehlbetrag 156.687,77 218.934,78\nAktiva 1.946.433,17 2.055.960,90
+            Source: 12-pl
+            =========
+            FINAL ANSWER: Der Anfang des Berichtszeiraum ist der 31.12.2020 und die Aktiva betragen 2.055.960,90 EUR.
+            SOURCES: 12-pl
+
+            QUESTION: Wie hoch sind die Aktiva zum Ende des Berichtszeiraum?
+            =========
+            Content: Aktiva\n31.12.2021\nEUR31.12.2020\nEUR\nA. Anlagevermögen 1.275.997,16 1.327.419,00\nI. Sachanlagen 1.275.997,16 1.327.419,00\nB. Umlaufvermögen 504.285,42 501.896,12\nI. Vorräte 245.247,38 166.878,95\nII. Forderungen und sonstige Vermögensgegenstände 141.579,18 112.321,39\ndavon gegen Gesellschafter 8.420,87 9.488,39\nIII. Kassenbestand, Bundesbankguthaben, Guthaben bei Kreditinstituten und Schecks 117.458,86 222.695,78\nC. Rechnungsabgrenzungsposten 9.462,82 7.711,00\nD. Nicht durch Eigenkapital gedeckter Fehlbetrag 156.687,77 218.934,78\nAktiva 1.946.433,17 2.055.960,90
+            Source: 28-pl
+            =========
+            FINAL ANSWER: Das Ende des Berichtszeiraum ist der 31.12.2021 und die Aktiva betragen 1.946.433,17 EUR.
+            SOURCES: 28-pl
+
+            QUESTION: Wie hoch sind die Rückstellungen zum Ende des Berichtszeiraum?
+            =========
+            Content: Aktiva\n31.12.2021\nEUR31.12.2020\nEUR\nA. Anlagevermögen 1.275.997,16 1.327.419,00\nI. Sachanlagen 1.275.997,16 1.327.419,00\nB. Umlaufvermögen 504.285,42 501.896,12\nI. Vorräte 245.247,38 166.878,95\nII. Forderungen und sonstige Vermögensgegenstände 141.579,18 112.321,39\ndavon gegen Gesellschafter 8.420,87 9.488,39\nIII. Kassenbestand, Bundesbankguthaben, Guthaben bei Kreditinstituten und Schecks 117.458,86 222.695,78\nC. Rechnungsabgrenzungsposten 9.462,82 7.711,00\nD. Nicht durch Eigenkapital gedeckter Fehlbetrag 156.687,77 218.934,78\nAktiva 1.946.433,17 2.055.960,90
+            Source: 2-pl
+            =========
+            FINAL ANSWER: Das Ende des Berichtszeiraum ist der 31.12.2021 und die Rückstellungen betragen 61.140,88 EUR.
+            SOURCES: 2-pl
+
+            QUESTION: Wie hoch sind die Verbindlichkeiten mit einer Restlaufzeit von mehr als einem Jahr zum Anfang des Berichtszeiraum?
+            =========
+            Content: Aktiva\n31.12.2021\nEUR31.12.2020\nEUR\nA. Anlagevermögen 1.275.997,16 1.327.419,00\nI. Sachanlagen 1.275.997,16 1.327.419,00\nB. Umlaufvermögen 504.285,42 501.896,12\nI. Vorräte 245.247,38 166.878,95\nII. Forderungen und sonstige Vermögensgegenstände 141.579,18 112.321,39\ndavon gegen Gesellschafter 8.420,87 9.488,39\nIII. Kassenbestand, Bundesbankguthaben, Guthaben bei Kreditinstituten und Schecks 117.458,86 222.695,78\nC. Rechnungsabgrenzungsposten 9.462,82 7.711,00\nD. Nicht durch Eigenkapital gedeckter Fehlbetrag 156.687,77 218.934,78\nAktiva 1.946.433,17 2.055.960,90
+            Source: 1-pl
+            Content: Angabe zu Restlaufzeitvermerken\nDer Betrag der Verbindlichkeiten mit einer Restlaufzeit bis zu einem Jahr beträgt 311.602,68 Euro (Vorjahr: 673.582,81 Euro).\nDer Betrag der Verbindlichkeiten mit einer Restlaufzeit zwischen einem und fünf Jahren beträgt Euro 588.687,47.\nDer Betrag der Verbindlichkeiten mit einer Restlaufzeit größer fünf Jahren beträgt Euro 711.842,04.\nAngaben zu Verbindlichkeiten gegenüber Gesellschaftern\nDer Betrag der Verbindlichkeiten gegenüber Gesellschaftern beläuft sich auf 310.900,00 Euro (Vorjahr: 310.900,00 Euro)
+            Source 38-pl
+            =========
+            FINAL ANSWER: Der Anfang des Berichtszeiraum ist der 31.12.2020 und die Verbindlichkeiten mit einer Restlaufzeit von mehr als einem Jahr betragen 1.566.033,07 EUR.
+            SOURCES: 1-pl
+
+            QUESTION: {question}
+            =========
+            {summaries}
+            =========
+            FINAL ANSWER:"""
