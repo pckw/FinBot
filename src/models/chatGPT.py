@@ -17,7 +17,7 @@ class chatGPT_assistant():
     
     def query(self, query):
         # open prompt templates
-        with open("prompt_templates/few_shot_doc_prompt_en_short.txt") as f:
+        with open("prompt_templates/few_shot_doc_prompt_de.txt") as f:
             template_few_shot_doc = f.read()
 
         with open("prompt_templates/summary_en.txt") as f:
@@ -32,22 +32,23 @@ class chatGPT_assistant():
             input_variables=["page_content", "source"])
 
         # Define llms
-        llm_for_chat = OpenAI(temperature=self.temperature,
-                              model=self.model_name)
+        llm_for_chat = ChatOpenAI(temperature=self.temperature,
+                                  model=self.model_name)
         
         llm_for_doc_chain = OpenAI(temperature=0)
 
         # Define chains
         question_generator = LLMChain(llm=llm_for_doc_chain,
                                       prompt=SUMMARY_PROMPT)
-        doc_chain = load_qa_with_sources_chain(llm_for_doc_chain,
+        
+        doc_chain = load_qa_with_sources_chain(llm_for_chat,
                                                chain_type="stuff",
                                                verbose=True,
                                                prompt=QA_PROMPT,
                                                document_prompt=DOC_PROMPT)
         
         chain = ConversationalRetrievalChain(
-                retriever=self.vectordb.as_retriever(search_kwargs={'k': self.k}),
+                retriever=self.vectordb.as_retriever(search_type="mmr", search_kwargs={'k': self.k}),
                 question_generator=question_generator,
                 combine_docs_chain=doc_chain,
                 rephrase_question=False,
