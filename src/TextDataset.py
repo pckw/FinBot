@@ -1,5 +1,5 @@
 from langchain.document_loaders import PyPDFLoader
-from langchain.text_splitter import RecursiveCharacterTextSplitter, TextSplitter, CharacterTextSplitter
+from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 class TextDataset():
     def __init__(self, path):
@@ -9,7 +9,7 @@ class TextDataset():
         # load the document
         loader = PyPDFLoader(self.path)
         documents = loader.load()
-        text_splitter = CharacterTextSplitter(separator='\n')
+        #text_splitter = CharacterTextSplitter(separator='\n')
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=2000, chunk_overlap=200)
         # text_splitter = RecursiveCharacterTextSplitter(separators=['\nHandelsbilanz\n',
         #                                                            '\nAnhang\n',

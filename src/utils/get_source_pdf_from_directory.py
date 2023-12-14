@@ -1,6 +1,6 @@
 import os
 
-def get_source_pdf_from_directory(source_directory):
+def get_source_pdf_from_directory(source_directory: str):
     files = []
     for file in os.listdir(source_directory):
         if file.endswith(".pdf"):
