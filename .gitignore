@@ -5,7 +5,7 @@ venv
 .env
 
 # vector database
-data/*
+docs/*/data
 
 
 __pycache__

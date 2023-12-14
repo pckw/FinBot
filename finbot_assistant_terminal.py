@@ -6,25 +6,47 @@ import json
 from src.models.chatGPT import chatGPT_assistant, chatGPT_extractor
 from src.vectordb.chroma import chromaDB
 from src.TextDataset import TextDataset
+from src.utils.get_source_pdf_from_directory import get_source_pdf_from_directory
 
 load_dotenv('.env')
 
 # Load documents
-file = "./docs/Lillebräu_2021.pdf"
+#source_directory = "./docs/Lillebraeu_2021"
+source_directory = "./docs/Kieler_Brauerei_2021"
+
+file = get_source_pdf_from_directory(source_directory)
+
 documents = TextDataset(file).load()
 with open('key_properties.json','r') as f:
     key_properties = json.load(f)
 
-# print(len(documents))
-# print(documents[0])
+# for d in documents:
+#     #print(d.page_content)
+#     print(d)
+#     print("---------------------------------------------------------------------------------")
+# print("---------------------------------------------------------------------------------")
+# print("---------------------------------------------------------------------------------")
 # exit()
-# Initialize vecordb
+
+# Initialize the vector database
 embedding = OpenAIEmbeddings()
-# vectordb = chromaDB.create_vectordb(documents,
-#                              embedding,
-#                              persist_directory='./data')
-# vectordb.persist()
-vectordb = chromaDB.read_vectordb(embedding, persist_directory='./data')
+vectordb = chromaDB.create_vectordb(documents,
+                             embedding,
+                             persist_directory=source_directory+"/data")
+vectordb.persist()
+
+#vectordb = chromaDB.read_vectordb(embedding, persist_directory=source_directory)
+
+# query it
+# query = "Wie heißen die Geschäftsführer?"
+# retriever = vectordb.as_retriever(search_type='mmr', search_kwargs={"k": 3})
+# docs=retriever.get_relevant_documents(query)
+
+# print(len(docs))
+# for d in docs:
+#     print(d.page_content)
+#     print("---------------------------------------------------------------------------------")
+#exit()
 
 # Initialize the assistant
 model_name='gpt-3.5-turbo'
@@ -32,11 +54,10 @@ model_name='gpt-3.5-turbo'
 finbot_assistant = chatGPT_assistant(vectordb=vectordb,
                                      model_name=model_name,
                                      temperature=0,
-                                     k=1)
+                                     k=3)
 
 extractor = chatGPT_extractor(vectordb=vectordb)
 extracted_key_properties = extractor.extract_entities(entities=key_properties)
-
 
 yellow = "\033[0;33m"
 green = "\033[0;32m"
@@ -61,4 +82,3 @@ while True:
 
     result = finbot_assistant.query(query)
     print(f"{white}Answer: " + result["answer"])
-    #chat_history.append((query, result["answer"]))
