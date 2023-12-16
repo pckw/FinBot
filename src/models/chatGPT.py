@@ -17,7 +17,7 @@ class chatGPT_assistant():
     
     def query(self, query):
         # open prompt templates
-        with open("prompt_templates/few_shot_doc_prompt_de.txt") as f:
+        with open("prompt_templates/few_shot_doc_prompt_de_chatgpt.txt") as f:
             template_few_shot_doc = f.read()
 
         with open("prompt_templates/summary_en.txt") as f:

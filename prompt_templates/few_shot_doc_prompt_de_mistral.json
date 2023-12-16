@@ -1,0 +1,29 @@
+[
+    {
+        "role": "system", "content": "You are a friendly assistant. Given parts of a long document and a question your create a final answer. If you don't know the answer, you say that you don't know. You don't try to make up an answer."
+    },
+    {
+        "role": "user", "content": "Given the following extracted parts of a long document as context and a question, create a final answer. If you don't know the answer, just say that you don't know. Don't try to make up an answer\n\n Question: Wie hoch sind die Aktiva zum Anfang des Berichtszeiraum?\n\n Context:Aktiva\n31.12.2021\nEUR31.12.2020\nEUR\nA. Anlagevermögen 1.275.997,16 1.327.419,00\nI. Sachanlagen 1.275.997,16 1.327.419,00\nB. Umlaufvermögen 504.285,42 501.896,12\nI. Vorräte 245.247,38 166.878,95\nII. Forderungen und sonstige Vermögensgegenstände 141.579,18 112.321,39\ndavon gegen Gesellschafter 8.420,87 9.488,39\nIII. Kassenbestand, Bundesbankguthaben, Guthaben bei Kreditinstituten und Schecks 117.458,86 222.695,78\nC. Rechnungsabgrenzungsposten 9.462,82 7.711,00\nD. Nicht durch Eigenkapital gedeckter Fehlbetrag 156.687,77 218.934,78\nAktiva 1.946.433,17 2.055.960,90 "
+    },
+    {
+        "role": "assistant", "content": "Final Answer:Der Anfang des Berichtszeiraum ist der 31.12.2020 und die Aktiva betragen 2.055.960,90 EUR."
+    },
+    {
+        "role": "user", "content": "Given the following extracted parts of a long document as context and a question, create a final answer. If you don't know the answer, just say that you don't know. Don't try to make up an answer\n\n Question: Wie hoch sind die Aktiva zum Ende des Berichtszeiraum?\n\n Context: Aktiva\n31.12.2021\nEUR31.12.2020\nEUR\nA. Anlagevermögen 1.275.997,16 1.327.419,00\nI. Sachanlagen 1.275.997,16 1.327.419,00\nB. Umlaufvermögen 504.285,42 501.896,12\nI. Vorräte 245.247,38 166.878,95\nII. Forderungen und sonstige Vermögensgegenstände 141.579,18 112.321,39\ndavon gegen Gesellschafter 8.420,87 9.488,39\nIII. Kassenbestand, Bundesbankguthaben, Guthaben bei Kreditinstituten und Schecks 117.458,86 222.695,78\nC. Rechnungsabgrenzungsposten 9.462,82 7.711,00\nD. Nicht durch Eigenkapital gedeckter Fehlbetrag 156.687,77 218.934,78\nAktiva 1.946.433,17 2.055.960,90"
+    },
+    {
+        "role": "assistant", "content": "Final Answer: Das Ende des Berichtszeiraum ist der 31.12.2021 und die Aktiva betragen 1.946.433,17 EUR."
+    },
+    {
+        "role": "user", "content": "Given the following extracted parts of a long document as context and a question, create a final answer. If you don't know the answer, just say that you don't know. Don't try to make up an answer\n\n Question: Wie hoch sind die Rückstellungen zum Ende des Berichtszeiraum?\n\n Context: Passiva\n31.12.2021\nEUR31.12.2020\nEUR\nA. Eigenkapital 0,00 0,00\nI. Gezeichnetes Kapital 25.000,00 25.000,00\nII. Kapitalrücklage 132.451,95 132.451,95\nIII. Verlustvortrag 376.386,73 390.608,25\nIV. Jahresüberschuss 62.247,01 14.221,52\nV. nicht gedeckter Fehlbetrag 156.687,77 218.934,78\nB. Einlagen stiller Gesellschafter 150.000,00  \nC. Rückstellungen 61.140,88 72.239,75\nD. Verbindlichkeiten 1.460.177,99 1.730.929,92\ndavon mit einer Restlaufzeit bis zu einem Jahr 148.813,55 164.896,85\ndavon mit einer Restlaufzeit von mehr als einem Jahr 1.311.364,44 1.566.033,07\ndavon gegenüber Gesellschaftern 310.900,00 310.900,00\nE. Rechnungsabgrenzungsposten 275.114,30 252.791,23\nPassiva 1.946.433,17 2.055.960,90"
+    },
+    {
+        "role": "assistant", "content": "Final Answer: Das Ende des Berichtszeiraum ist der 31.12.2021 und die Rückstellungen betragen 61.140,88 EUR."
+    },
+    {
+        "role": "user", "content": "Given the following extracted parts of a long document as context and a question, create a final answer. If you don't know the answer, just say that you don't know. Don't try to make up an answer\n\n Question: Wie hoch sind die Verbindlichkeiten mit einer Restlaufzeit von mehr als einem Jahr zum Anfang des Berichtszeiraum?\n\n Context: Passiva\n31.12.2021\nEUR31.12.2020\nEUR\nA. Eigenkapital 0,00 0,00\nI. Gezeichnetes Kapital 25.000,00 25.000,00\nII. Kapitalrücklage 132.451,95 132.451,95\nIII. Verlustvortrag 376.386,73 390.608,25\nIV. Jahresüberschuss 62.247,01 14.221,52\nV. nicht gedeckter Fehlbetrag 156.687,77 218.934,78\nB. Einlagen stiller Gesellschafter 150.000,00  \nC. Rückstellungen 61.140,88 72.239,75\nD. Verbindlichkeiten 1.460.177,99 1.730.929,92\ndavon mit einer Restlaufzeit bis zu einem Jahr 148.813,55 164.896,85\ndavon mit einer Restlaufzeit von mehr als einem Jahr 1.311.364,44 1.566.033,07\ndavon gegenüber Gesellschaftern 310.900,00 310.900,00\nE. Rechnungsabgrenzungsposten 275.114,30 252.791,23\nPassiva 1.946.433,17 2.055.960,90 Context: Angabe zu Restlaufzeitvermerken\nDer Betrag der Verbindlichkeiten mit einer Restlaufzeit bis zu einem Jahr beträgt 311.602,68 Euro (Vorjahr: 673.582,81 Euro).\nDer Betrag der Verbindlichkeiten mit einer Restlaufzeit zwischen einem und fünf Jahren beträgt Euro 588.687,47.\nDer Betrag der Verbindlichkeiten mit einer Restlaufzeit größer fünf Jahren beträgt Euro 711.842,04.\nAngaben zu Verbindlichkeiten gegenüber Gesellschaftern\nDer Betrag der Verbindlichkeiten gegenüber Gesellschaftern beläuft sich auf 310.900,00 Euro (Vorjahr: 310.900,00 Euro)"
+    },
+    {
+        "role": "assistant", "content": "Final Answer: Der Anfang des Berichtszeiraum ist der 31.12.2020 und die Verbindlichkeiten mit einer Restlaufzeit von mehr als einem Jahr betragen 1.566.033,07 EUR."
+    }
+]
