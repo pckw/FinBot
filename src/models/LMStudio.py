@@ -22,33 +22,34 @@ class LMStudio_assistant():
             )
         with open('prompt_templates/few_shot_doc_prompt_de_mistral.json', 'r') as f:
             messages = json.load(f)
-        self.chat_history = messages[:-1]
-        self.prompt_template = messages[-1]
+        self.chat_history = messages[:-2]
+        self.prompt_template = messages[-2:]
 
     def query(self, query):
-
-        # load json from file
-        print("--------")
+        # Retrieve doctuments
         retrieved_docs = self.retriever.invoke(query)
         # for doc in retrieved_docs:
         #     print(doc.page_content)
         #     print("---------------------------------------------------------------------------------")
         retrieved_docs = """\n\nContext:""".join([doc.page_content for doc in retrieved_docs])
-        prompt = fill_prompt_template(
-            copy.deepcopy(self.prompt_template),
+        # Construct prompt from template
+        prompt = copy.deepcopy(self.prompt_template)
+        prompt[0] = fill_prompt_template(
+            prompt[0],
             {"context": retrieved_docs, "query": query})
-        self.chat_history.append(prompt)
+        self.chat_history.extend(prompt)
+        # Define llm
         llm = OpenAI_native(base_url="http://localhost:1234/v1", api_key="not-needed")
+        # Invoke LLM
         response = llm.chat.completions.create(
             model="local-model",  # this field is currently unused
             messages=self.chat_history,
             temperature=0.0
         )
-        self.chat_history.append(
-            {
-                'role': 'assistant', 'content': response.choices[0].message.content
+        # Append response to history
+        self.chat_history[-1] = {
+            'role': 'assistant', 'content': "Final Answer: " + response.choices[0].message.content
             }
-        )
         return {"answer": response.choices[0].message.content}
 
 class LMStudio_extractor():
