@@ -59,32 +59,31 @@ vectordb_keyprop = create_vectordb(
 # Initialize the assistant
 model_name='gpt-3.5-turbo'
 #model_name='gpt-4'
-# finbot_assistant = chatGPT_assistant(vectordb=vectordb_chat,
-#                                      model_name=model_name,
-#                                      temperature=0,
-#                                      k=3)
-finbot_assistant = LMStudio_assistant(vectordb=vectordb_chat,
+finbot_assistant = chatGPT_assistant(vectordb=vectordb_chat,
                                      model_name=model_name,
                                      temperature=0,
                                      k=3)
+# finbot_assistant = LMStudio_assistant(vectordb=vectordb_chat,
+#                                      model_name=model_name,
+#                                      temperature=0,
+#                                      k=3)
 
-#extractor = chatGPT_extractor(vectordb=vectordb_keyprop)
+extractor = chatGPT_extractor(vectordb=vectordb_keyprop)
 #extractor = LMStudio_extractor(vectordb=vectordb_keyprop)
-#extracted_key_properties = extractor.extract_entities(entities=key_properties)
+extracted_key_properties = extractor.extract_entities(entities=key_properties)
 
 yellow = "\033[0;33m"
 green = "\033[0;32m"
 white = "\033[0;39m"
 
-chat_history = []
 print(f"{yellow}---------------------------------------------------------------------------------")
 print('Welcome to the FinBot. You are now ready to start interacting with your documents')
 print('---------------------------------------------------------------------------------')
 print(' ')
-# print('Derived key properties:')
-# for i in extracted_key_properties:
-#     print(f"{i}: {extracted_key_properties[i]}")
-# print(' ')
+print('Derived key properties:')
+for i in extracted_key_properties:
+    print(f"{i}: {extracted_key_properties[i]}")
+print(' ')
 while True:
     query = input(f"{green}Prompt: ")
     if query == "exit" or query == "quit" or query == "q" or query == "f":
