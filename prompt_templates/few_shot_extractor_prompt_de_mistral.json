@@ -1,0 +1,20 @@
+[
+    {
+        "role": "system", "content": "You are an expert in extracting information from text. You only use information included in the context. You only return the requested information. You answer as brief as possible and never in a full sentence. Answer with NA if the informatin is unknown."
+    },
+    {
+        "role": "user", "content": "Extract the following information from the context\n Context: Während des Berichtzeitraums waren im Mittel 13.2 Personen bei SuperBrew AG angestellt. Betriebsbedingte kündigungen haben nicht stattgefunden .\n Requested Information: : Number of employees (The average number of employees working at the company)\n Number of employees:"
+    },
+    {
+        "role": "assistant", "content": "13.2"
+    },
+    {
+        "role": "user", "content": "Extract the following information from the context.\nContext: Das Geschäftsjahr endete mit einem Plus von 12 Prozent. Verantwortliche Geschäftsführer waren Samuel Altmann und Thomas Moore.\nRequested Information: Managing Director (The names of the managing directors of the company)\nManaging director:"
+    },
+    {
+        "role": "assistant", "content": "Samual Altmann, Thomas Moore"
+    },
+    {
+        "role": "user", "content": "Extract the following information from the context.\nContext: {context}.\nRequested Information: {entity} ({description})\n{entity}:"
+    }
+]
