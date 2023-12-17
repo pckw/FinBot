@@ -12,13 +12,12 @@ load_dotenv('.env')
 
 
 class LMStudio_assistant():
-    def __init__(self, vectordb, model_name='gpt-3.5-turbo', temperature=0.7, k=6) -> None:
-        self.model_name = model_name
+    def __init__(self, vectordb, temperature=0, k=3) -> None:
         self.temperature = temperature
         self.k = k
         self.vectordb = vectordb
         self.retriever = vectordb.as_retriever(
-            search_type="similarity", search_kwargs={"k": 3}
+            search_type="similarity", search_kwargs={"k": k}
             )
         with open('prompt_templates/few_shot_doc_prompt_de_mistral.json', 'r') as f:
             messages = json.load(f)
