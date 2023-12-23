@@ -36,6 +36,14 @@
             FINAL ANSWER: Der Anfang des Berichtszeiraum ist der 31.12.2020 und die Verbindlichkeiten mit einer Restlaufzeit von mehr als einem Jahr betragen 1.566.033,07 EUR.
             SOURCES: 1-pl
 
+            QUESTION: Wie hoch sind die Rückstellungen?
+            =========
+            Content: Passiva 30.9.2020EUR30.9.2019EUR\nA. Eigenkapital 200,00 58.000,00\nI. Kapitalanteile 200,00 58.000,00\n1. Kapitalanteile der persönlich haftenden Gesellschafter 200,00 200,00\n2. Kapitalanteile der Kommanditisten 0,00 57.800,00\nB. Rückstellungen 10.574,00 17.763,00\nC. Verbindlichkeiten 1.898.998,81 1.423.554,10\ndavon mit Restlaufzeit bis 1 Jahr 685.984,59 789.353,04\ndavon mit einer Restlaufzeit von mehr als einem Jahr 571.162,85 534.389,90\nD. Rechnungsabgrenzungsposten 416,67 2.916,67\nBilanzsumme, Summe Passiva 1.910.189,48 1.502.233,77
+            Source: 7-pl
+            =========
+            FINAL ANSWER: Die Rückstellungen betragen zum 31.12.2021 61.140,88 € und zum 31.12.2020 72.239,75€.
+            SOURCES: 7-pl
+
             QUESTION: {question}
             =========
             {summaries}
