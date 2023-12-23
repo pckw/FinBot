@@ -8,7 +8,7 @@ load_dotenv('.env')
 
 
 class chatGPT_assistant():
-    def __init__(self, vectordb, model_name='gpt-3.5-turbo', temperature=0.7, k=6) -> None:
+    def __init__(self, vectordb, model_name='gpt-3.5-turbo', temperature=0.7, k=3) -> None:
         self.model_name = model_name
         self.temperature = temperature
         self.k = k
@@ -17,7 +17,7 @@ class chatGPT_assistant():
     
     def query(self, query):
         # open prompt templates
-        with open("prompt_templates/few_shot_doc_prompt_de.txt") as f:
+        with open("prompt_templates/few_shot_doc_prompt_de_chatgpt.txt") as f:
             template_few_shot_doc = f.read()
 
         with open("prompt_templates/summary_en.txt") as f:
@@ -62,10 +62,14 @@ class chatGPT_assistant():
     
 class chatGPT_extractor():
         def __init__(self, vectordb) -> None:
-            self.retriever = vectordb.as_retriever(search_type="mmr", search_kwargs={"k": 3})
+            self.retriever = vectordb.as_retriever(search_type="similarity", search_kwargs={"k": 3})
 
         def extract_single_entity(self, entity:str, description:str, llm) -> str:
             retrieved_docs = self.retriever.invoke(entity)
+            for doc in retrieved_docs:
+                print(entity)
+                print(doc.page_content)
+                print("---------------------------------------------------------------------------------")
             prompt_template = PromptTemplate.from_template(
                 """Extract the following information from the context. Answer very briefly and as short as possible. Answer with NA if not found.\n
                 {entity}: {description}\n
