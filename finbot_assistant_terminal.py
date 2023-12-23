@@ -23,10 +23,11 @@ def create_vectordb(source_directory, persist_directory, chunk_size, chunk_overl
     documents = TextDataset(file).load(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
     # Initialize the vector database
     embedding = OpenAIEmbeddings()
-    vectordb = chromaDB.create_vectordb(documents,
-                                embedding,
-                                persist_directory=source_directory+"/data/"+persist_directory)
-    vectordb.persist()
+    vectordb = chromaDB.create_vectordb(
+        documents,
+        embedding,
+        persist_directory="./data/"+persist_directory
+    )
     # for d in documents:
     #     #print(d.page_content)
     #     print(d)
@@ -39,14 +40,14 @@ def create_vectordb(source_directory, persist_directory, chunk_size, chunk_overl
 vectordb_chat = create_vectordb(
     source_directory=source_directory,
     persist_directory='chat',
-    chunk_size=2000,
-    chunk_overlap=200,
+    chunk_size=1500,
+    chunk_overlap=250,
     )
 
 vectordb_keyprop = create_vectordb(
     source_directory=source_directory,
     persist_directory='keyprop',
-    chunk_size=300,
+    chunk_size=500,
     chunk_overlap=0,
     )
 #vectordb = chromaDB.read_vectordb(embedding, persist_directory=source_directory)
@@ -59,18 +60,18 @@ vectordb_keyprop = create_vectordb(
 # Initialize the assistant
 model_name='gpt-3.5-turbo'
 #model_name='gpt-4'
-# finbot_assistant = chatGPT_assistant(vectordb=vectordb_chat,
-#                                      model_name=model_name,
-#                                      temperature=0,
-#                                      k=3)
-finbot_assistant = LMStudio_assistant(vectordb=vectordb_chat,
+finbot_assistant = chatGPT_assistant(vectordb=vectordb_chat,
                                      model_name=model_name,
                                      temperature=0,
                                      k=3)
+# finbot_assistant = LMStudio_assistant(vectordb=vectordb_chat,
+#                                      model_name=model_name,
+#                                      temperature=0,
+#                                      k=3)
 
 extractor = chatGPT_extractor(vectordb=vectordb_keyprop)
 #extractor = LMStudio_extractor(vectordb=vectordb_keyprop)
-#extracted_key_properties = extractor.extract_entities(entities=key_properties)
+extracted_key_properties = extractor.extract_entities(entities=key_properties)
 
 yellow = "\033[0;33m"
 green = "\033[0;32m"
@@ -81,9 +82,9 @@ print('Welcome to the FinBot. You are now ready to start interacting with your d
 print('---------------------------------------------------------------------------------')
 print(' ')
 print('Derived key properties:')
-# for i in extracted_key_properties:
-#     print(f"{i}: {extracted_key_properties[i]}")
-# print(' ')
+for i in extracted_key_properties:
+    print(f"{i}: {extracted_key_properties[i]}")
+print(' ')
 while True:
     query = input(f"{green}Prompt: ")
     if query == "exit" or query == "quit" or query == "q" or query == "f":
