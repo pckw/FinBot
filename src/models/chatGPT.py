@@ -66,10 +66,10 @@ class chatGPT_extractor():
 
         def extract_single_entity(self, entity:str, description:str, llm) -> str:
             retrieved_docs = self.retriever.invoke(entity)
-            for doc in retrieved_docs:
-                print(entity)
-                print(doc.page_content)
-                print("---------------------------------------------------------------------------------")
+            # for doc in retrieved_docs:
+            #     print(entity)
+            #     print(doc.page_content)
+            #     print("---------------------------------------------------------------------------------")
             prompt_template = PromptTemplate.from_template(
                 """Extract the following information from the context. Answer very briefly and as short as possible. Answer with NA if not found.\n
                 {entity}: {description}\n
