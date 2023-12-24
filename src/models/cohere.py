@@ -1,23 +1,26 @@
 from langchain.chains import ConversationalRetrievalChain, LLMChain
-from langchain.llms import OpenAI
-from langchain.chat_models import ChatOpenAI
-from dotenv import load_dotenv
+#from langchain.llms import OpenAI
+from langchain.chat_models import ChatCohere
 from langchain.chains.qa_with_sources import load_qa_with_sources_chain
 from langchain.prompts import PromptTemplate
-load_dotenv('.env')
+import yaml
 
 
-class chatGPT_assistant():
-    def __init__(self, vectordb, model_name='gpt-3.5-turbo', temperature=0.7, k=3) -> None:
-        self.model_name = model_name
+class cohere_assistant():
+    def __init__(self, vectordb, temperature=0, k=3) -> None:
+        #self.model_name = model_name
         self.temperature = temperature
         self.k = k
         self.vectordb = vectordb
         self.chat_history = []
+        # read cohere api key from config.yaml
+        with open("config.yaml", "r") as f:
+            config = yaml.safe_load(f)
+            self.api_key = config["COHERE_API_KEY"]
     
     def query(self, query):
         # open prompt templates
-        with open("prompt_templates/few_shot_doc_prompt_de_chatgpt.txt") as f:
+        with open("prompt_templates/few_shot_doc_prompt_de_cohere.txt") as f:
             template_few_shot_doc = f.read()
 
         with open("prompt_templates/summary_en.txt") as f:
@@ -32,10 +35,15 @@ class chatGPT_assistant():
             input_variables=["page_content", "source"])
 
         # Define llms
-        llm_for_chat = ChatOpenAI(temperature=self.temperature,
-                                  model=self.model_name)
-        
-        llm_for_doc_chain = OpenAI(temperature=0)
+        llm_for_chat = ChatCohere(
+            temperature=self.temperature,
+            cohere_api_key=self.api_key
+        )
+       
+        llm_for_doc_chain = ChatCohere(
+            temperature=0,
+            cohere_api_key=self.api_key
+        )
 
         # Define chains
         question_generator = LLMChain(llm=llm_for_doc_chain,
@@ -59,32 +67,43 @@ class chatGPT_assistant():
         result = chain({"question": query, "chat_history": self.chat_history})
         self.chat_history.append((query, result["answer"])) # add query and result
         return result
-    
-class chatGPT_extractor():
+   
+
+class cohere_extractor():
         def __init__(self, vectordb) -> None:
             self.retriever = vectordb.as_retriever(search_type="similarity", search_kwargs={"k": 3})
+            with open("config.yaml", "r", encoding="UTF-8") as f:
+                config = yaml.safe_load(f)
+                self.api_key = config["COHERE_API_KEY"]
 
-        def extract_single_entity(self, entity:str, description:str, llm) -> str:
+        def extract_single_entity(self, entity: str, description:str, llm) -> str:
             retrieved_docs = self.retriever.invoke(entity)
-            # for doc in retrieved_docs:
-            #     print(entity)
-            #     print(doc.page_content)
-            #     print("---------------------------------------------------------------------------------")
+            for doc in retrieved_docs:
+                print(entity)
+                print(doc.page_content)
+                print("---------------------------------------------------------------------------------")
             prompt_template = PromptTemplate.from_template(
-                """Extract the following information from the context. Answer very briefly and as short as possible. Answer with NA if not found.\n
+                """Extract the following information from the context. Answer as short as possible. Answer with NA if not found and rember to answer with as few words as possible. Don't offer do extract more information.\n
+                Revenue: The revenue of the company in the last year.
+                Context: "Total revenue in the last year was $10 million."
+
+                Revenue: $10 million
+                
                 {entity}: {description}\n
                 Context:{context}\n\n
                 
                 {entity}:"""
             )
-            prompt = prompt_template.format_prompt(entity=entity,
-                                                   description=description,
-                                                   context=[doc.page_content for doc in retrieved_docs])
+            prompt = prompt_template.format_prompt(
+                entity=entity,
+                description=description,
+                context="\n".join([doc.page_content for doc in retrieved_docs])
+            )
             response = llm(prompt.to_messages()).content
             return response
 
         def extract_entities(self, entities: dict) -> dict:
-            llm = ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0)
+            llm = ChatCohere(temperature=0, cohere_api_key=self.api_key)
             result = {}
             for i in entities:
                 result[i] = self.extract_single_entity(entity=i,

@@ -1,19 +1,19 @@
 from langchain.vectorstores import Chroma
-import shutil
-from time import sleep
 import os
 
 class chromaDB():
     def __init__(self) -> None:
         pass
 
-    def create_vectordb(documents, embedding, persist_directory='./data'):
-        shutil.rmtree(persist_directory, ignore_errors=True)
-        vectordb = Chroma.from_documents(
-            documents,
-            embedding=embedding,
+    def create_vectordb(documents, embedding, persist_directory):
+        vectordb = Chroma(
+            embedding_function=embedding,
             persist_directory=persist_directory
-            )
+        )
+        ids = vectordb.get()['ids']
+        if ids:
+            vectordb._collection.delete(ids=vectordb.get()['ids'])
+        vectordb.add_documents(documents=documents)
         vectordb.persist()
         return vectordb
 
