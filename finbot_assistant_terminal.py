@@ -6,27 +6,31 @@ import json
 from src.models.chatGPT import chatGPT_assistant, chatGPT_extractor
 from src.models.LMStudio import LMStudio_assistant, LMStudio_extractor
 from src.vectordb.chroma import chromaDB
+from src.vectordb.qdrant import qdrantDB
 from src.TextDataset import TextDataset
 from src.utils.get_source_pdf_from_directory import get_source_pdf_from_directory
 
 load_dotenv('.env')
 
 # Load documents
-source_directory = "./docs/Lillebraeu_2021"
-#source_directory = "./docs/Kieler_Brauerei_2021"
+file = "./docs/Lillebräu_2021.pdf"
+#file = "./docs/Kiels_Fitness_2021.pdf"
 
 with open('key_properties.json','r') as f:
     key_properties = json.load(f)
 
-def create_vectordb(source_directory, persist_directory, chunk_size, chunk_overlap):
-    file = get_source_pdf_from_directory(source_directory)
-    documents = TextDataset(file).load(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
+
+def create_vectordb(file, persist_directory, chunk_size, chunk_overlap):
+    documents = TextDataset(file).load(
+        chunk_size=chunk_size,
+        chunk_overlap=chunk_overlap
+    )
     # Initialize the vector database
     embedding = OpenAIEmbeddings()
-    vectordb = chromaDB.create_vectordb(
+    vectordb = qdrantDB.create_vectordb(
         documents,
         embedding,
-        persist_directory="./data/"+persist_directory
+        persist_directory=persist_directory
     )
     # for d in documents:
     #     #print(d.page_content)
@@ -38,18 +42,19 @@ def create_vectordb(source_directory, persist_directory, chunk_size, chunk_overl
     return vectordb
 
 vectordb_chat = create_vectordb(
-    source_directory=source_directory,
-    persist_directory='chat',
+    file=file,
+    persist_directory='./data/chat',
     chunk_size=1500,
     chunk_overlap=250,
     )
 
 vectordb_keyprop = create_vectordb(
-    source_directory=source_directory,
-    persist_directory='keyprop',
+    file=file,
+    persist_directory='./data/keyprop',
     chunk_size=500,
     chunk_overlap=0,
     )
+
 #vectordb = chromaDB.read_vectordb(embedding, persist_directory=source_directory)
 
 # query it
