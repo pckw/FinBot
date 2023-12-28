@@ -4,8 +4,8 @@ from src.models.chatGPT import chatGPT_assistant, chatGPT_extractor
 from src.models.LMStudio import LMStudio_assistant, LMStudio_extractor
 from src.models.cohere import cohere_assistant, cohere_extractor
 from src.vectordb.chroma import chromaDB
+from src.vectordb.qdrant import qdrantDB
 from src.TextDataset import TextDataset
-from src.utils.get_source_pdf_from_directory import get_source_pdf_from_directory
 from src.utils.get_files_from_directory import get_files_from_directory
 import gradio as gr
 import json
@@ -19,7 +19,7 @@ def run_single_emmbedding(file, persist_directory, chunk_size, chunk_overlap):
     )
     embedding = OpenAIEmbeddings()
     #embedding = CohereEmbeddings()
-    _ = chromaDB.create_vectordb(
+    _ = qdrantDB.create_vectordb(
         documents=documents,
         embedding=embedding,
         persist_directory=persist_directory,
@@ -45,7 +45,7 @@ def read_vectordb(persist_directory):
     embedding = OpenAIEmbeddings()
     #embedding = CohereEmbeddings()
     persist_directory = persist_directory
-    return chromaDB.read_vectordb(
+    return qdrantDB.read_vectordb(
         embedding=embedding,
         persist_directory=persist_directory
     )
