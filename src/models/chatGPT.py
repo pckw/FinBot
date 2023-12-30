@@ -57,30 +57,40 @@ class chatGPT_assistant():
                 verbose=True
             )
         result = chain({"question": query, "chat_history": self.chat_history})
+        #result = {"answer": "Hello World"}
         self.chat_history.append((query, result["answer"])) # add query and result
         return result
     
 class chatGPT_extractor():
         def __init__(self, vectordb) -> None:
-            self.retriever = vectordb.as_retriever(search_type="similarity", search_kwargs={"k": 3})
+            self.retriever = vectordb.as_retriever(
+                search_type="similarity",
+                search_kwargs={"k": 3}
+            )
 
-        def extract_single_entity(self, entity:str, description:str, llm) -> str:
+        def extract_single_entity(self, entity: str, description:str, llm) -> str:
             retrieved_docs = self.retriever.invoke(entity)
-            # for doc in retrieved_docs:
-            #     print(entity)
-            #     print(doc.page_content)
-            #     print("---------------------------------------------------------------------------------")
+            print(entity)
+            for doc in retrieved_docs:
+                print(doc.page_content)
+                print("---------------------------------------------------------------------------------")                    
+            print("---------------------------------------------------------------------------------")
+
             prompt_template = PromptTemplate.from_template(
-                """Extract the following information from the context. Answer very briefly and as short as possible. Answer with NA if not found.\n
+                """Extract the following information from the context. Answer very briefly and as short as possible. Give only answers for the most recent year. Answer with NA if not found.\n
                 {entity}: {description}\n
-                Context:{context}\n\n
-                
+                Context: {context}\n\n
+                Remember: answer very briefly and as short as possible. Give only answers for the most recent year. Answer with NA if not found.\n\n
                 {entity}:"""
             )
-            prompt = prompt_template.format_prompt(entity=entity,
-                                                   description=description,
-                                                   context=[doc.page_content for doc in retrieved_docs])
+            prompt = prompt_template.format_prompt(
+                entity=entity,
+                description=description,
+                context="Context: ".join([doc.page_content for doc in retrieved_docs])
+            )
+            #print(prompt.to_messages())
             response = llm(prompt.to_messages()).content
+            #response = "A"
             return response
 
         def extract_entities(self, entities: dict) -> dict:

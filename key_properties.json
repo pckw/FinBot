@@ -1,6 +1,5 @@
 {"Name": "The name of the company; Der Firmenname",
- "Headquarters": "The headquarters of the company; Der Firmensitz des Unternehmens",
- "Managing directors": "The managing directors of the company; Der Geschäftsführer des Unternehmens",
+ "Headquarters": "The city where the company has its headquarter; Der Ort/die Stadt an dem die Firma bzw die Gesellschaft ihren Sitz hat; der Firmensitz des Unternehmens/der Gesellschaft",
  "Number of employees": "The number of employees in the company; Die Anzahl an Beschäftigten im Unternehmen",
  "Report period": "The period in time coverd by the report; Das Geschäftsjahr des Berichts"}
 

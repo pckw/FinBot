@@ -1,9 +1,9 @@
 from langchain.embeddings import OpenAIEmbeddings
-from langchain.embeddings.cohere import CohereEmbeddings
+#from langchain.embeddings.cohere import CohereEmbeddings
 from src.models.chatGPT import chatGPT_assistant, chatGPT_extractor
 from src.models.LMStudio import LMStudio_assistant, LMStudio_extractor
 from src.models.cohere import cohere_assistant, cohere_extractor
-from src.vectordb.chroma import chromaDB
+#from src.vectordb.chroma import chromaDB
 from src.vectordb.qdrant import qdrantDB
 from src.TextDataset import TextDataset
 from src.utils.get_files_from_directory import get_files_from_directory
@@ -30,7 +30,7 @@ def run_double_embedding(file):
     run_single_emmbedding(
         file=file,
         persist_directory='./data/keyprop',
-        chunk_size=300,
+        chunk_size=600,
         chunk_overlap=0,
     )
     run_single_emmbedding(
