@@ -8,8 +8,10 @@ from src.vectordb.qdrant import qdrantDB
 from src.TextDataset import TextDataset
 from src.utils.get_files_from_directory import get_files_from_directory
 import gradio as gr
+from gradio_pdf import PDF
 import json
 from time import sleep
+
 
 
 def run_single_emmbedding(file, persist_directory, chunk_size, chunk_overlap):
@@ -112,19 +114,23 @@ def embeddings_and_key_properties(file, model_name):
     return "A", "B", "C", "D", "E"
 
 
-def uploadbutton(file):
-    write_parameter_to_file(key='file', value=file, file='./config/file.json')
-    return None
-
-
-def filelist(file, model):
+def uploadbutton(file, model_name):
     if file:
-        file = "./docs/" + file
         write_parameter_to_file(key='file', value=file, file='./config/file.json')
+        name, hq, employee, manager, period = embeddings_and_key_properties(file, model_name)
+        return name, hq, employee, manager, period
     else:
-        file = read_parameter_from_file(file='./config/file.json')
-        file = file['file']
-    return embeddings_and_key_properties(file, model)
+        return "", "", "", "", ""
+
+
+def pdfupload(file):
+    write_parameter_to_file(key='file', value=file, file='./config/file.json')
+    return None, file
+
+
+def filelist(file):
+    file = "./docs/" + file
+    return file
 
 
 def read_parameter_from_file(file='./config/model_parameter_default.json'):
@@ -185,6 +191,12 @@ def read_default():
         config['overlap_keyprop']
 
 
+def display_pdf(file='./config/file.json'):
+    with open(file, 'r') as f:
+        config = json.load(f)
+    return config['file']
+
+
 def main():
     list_of_files = get_files_from_directory('./docs')
     config = read_parameter_from_file()
@@ -234,13 +246,13 @@ def main():
             )
             inputfile_list.change(
                 fn=filelist,
-                inputs=[inputfile_list, model],
-                outputs=[name, hq, employee, manager, period]
+                inputs=[inputfile_list],
+                outputs=[inputfile_button]
             )
-            inputfile_button.upload(
+            inputfile_button.change(
                 fn=uploadbutton,
-                inputs=[inputfile_button],
-                outputs=[inputfile_list])
+                inputs=[inputfile_button, model],
+                outputs=[name, hq, employee, manager, period])
 
         # Options tab
         with gr.Tab("Options"):
@@ -308,20 +320,33 @@ def main():
                 fn=write_overlapkeyprop_to_file,
                 inputs=[overlap_keyprop],
             )
-        reset = gr.Button("Reset to default")
-        reset.click(
-            fn=read_default,
-            inputs=None,
-            outputs=[
-                temp,
-                k_chat,
-                k_keyprop,
-                chunk_size_chat,
-                chunk_size_keyprop,
-                overlap_chat,
-                overlap_keyprop
-            ]
-        )
+            reset = gr.Button("Reset to default")
+            reset.click(
+                fn=read_default,
+                inputs=None,
+                outputs=[
+                    temp,
+                    k_chat,
+                    k_keyprop,
+                    chunk_size_chat,
+                    chunk_size_keyprop,
+                    overlap_chat,
+                    overlap_keyprop
+                ]
+            )
+        with gr.Tab("PDF"):
+            gr.Markdown("### PDF")
+            pdf = PDF(label="Upload a PDF",
+                      interactive=None,
+                      height=1000)
+            display_pdf_button = gr.Button("Display selected PDF")
+            pdf.upload(
+                fn=pdfupload,
+                inputs=[pdf],
+                outputs=[inputfile_list, inputfile_button]
+            )
+            display_pdf_button.click(fn=display_pdf, inputs=[], outputs=pdf)
+            #pdf.upload(lambda f: f, pdf, name)
     iface.launch()
 
 
