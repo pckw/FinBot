@@ -14,7 +14,7 @@ class cohere_assistant():
         self.vectordb = vectordb
         self.chat_history = []
         # read cohere api key from config.yaml
-        with open("config.yaml", "r") as f:
+        with open("./config/config.yaml", "r") as f:
             config = yaml.safe_load(f)
             self.api_key = config["COHERE_API_KEY"]
     
