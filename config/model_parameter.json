@@ -1,1 +1,0 @@
-{"model_name": "gpt-3.5-turbo", "api_key": "", "temperature": 0, "k_chat": 3, "k_keyprop": 3, "chunk_chat": 1500, "chunk_keyprop": 600, "overlap_chat": 200, "overlap_keyprop": 0}

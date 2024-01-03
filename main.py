@@ -12,6 +12,8 @@ from gradio_pdf import PDF
 import json
 from time import sleep
 import yaml
+import shutil
+import os
 
 
 with open("./config/config.yaml", "r") as f:
@@ -247,6 +249,9 @@ def display_pdf(file='./config/file.json'):
 
 
 def main():
+    # check if model_parameter.json exists and copy model_parameter_default.json to model_parameter.json
+    if not os.path.exists('./config/model_parameter.json'):
+        shutil.copy('./config/model_parameter_default.json', './config/model_parameter.json')
     list_of_files = get_files_from_directory('./docs')
     config = read_parameter_from_file()
     with gr.Blocks() as iface:
