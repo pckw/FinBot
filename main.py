@@ -11,15 +11,26 @@ import gradio as gr
 from gradio_pdf import PDF
 import json
 from time import sleep
+import yaml
 
 
+with open("./config/config.yaml", "r") as f:
+    config = yaml.safe_load(f)
+    api_key = config["OPENAI_API_KEY"]
 
-def run_single_emmbedding(file, persist_directory, chunk_size, chunk_overlap):
+
+def run_single_emmbedding(
+        file,
+        persist_directory,
+        chunk_size,
+        chunk_overlap,
+        api_key
+):
     documents = TextDataset(file).load(
         chunk_size=chunk_size,
         chunk_overlap=chunk_overlap,
     )
-    embedding = OpenAIEmbeddings()
+    embedding = OpenAIEmbeddings(api_key=api_key)
     #embedding = CohereEmbeddings()
     _ = qdrantDB.create_vectordb(
         documents=documents,
@@ -28,23 +39,25 @@ def run_single_emmbedding(file, persist_directory, chunk_size, chunk_overlap):
     )
 
 
-def run_double_embedding(file):
+def run_double_embedding(file, api_key):
     run_single_emmbedding(
         file=file,
         persist_directory='./data/keyprop',
         chunk_size=600,
         chunk_overlap=0,
+        api_key=api_key
     )
     run_single_emmbedding(
         file=file,
         persist_directory='./data/chat',
         chunk_size=1500,
-        chunk_overlap=200
+        chunk_overlap=200,
+        api_key=api_key
     )
 
 
-def read_vectordb(persist_directory):
-    embedding = OpenAIEmbeddings()
+def read_vectordb(persist_directory, api_key):
+    embedding = OpenAIEmbeddings(api_key=api_key)
     #embedding = CohereEmbeddings()
     persist_directory = persist_directory
     return qdrantDB.read_vectordb(
@@ -53,13 +66,19 @@ def read_vectordb(persist_directory):
     )
 
 
-def get_response(message, chat_history, model_name):
+def get_response(message, chat_history, api_key=None):
     with open('./config/model_parameter.json', 'r') as f:
         config = json.load(f)
+        model_name = config["model_name"]
         k = config["k_chat"]
         temperature = config["temperature"]
+        api_key = config["api_key"]
+        if api_key == "":
+            api_key = None
     vectordb = read_vectordb(
-        persist_directory='./data/chat')
+        persist_directory='./data/chat',
+        api_key=api_key
+    )
     if model_name == 'LM Studio':
         finbot_assistant = LMStudio_assistant(
             vectordb=vectordb,
@@ -71,34 +90,46 @@ def get_response(message, chat_history, model_name):
             vectordb=vectordb,
             model_name=model_name,
             temperature=temperature,
-            k=3
+            k=k,
+            api_key=api_key
         )
     elif model_name == 'Cohere':
         finbot_assistant = cohere_assistant(
             vectordb=vectordb,
             temperature=temperature,
-            k=3
+            k=k,
+            api_key=api_key
         )
     result = finbot_assistant.query(message)
     chat_history.append((message, result["answer"]))
     return "", chat_history
 
-def key_properties(model_name):
+
+def key_properties(model_name, api_key):
     with open('./config/model_parameter.json', 'r') as f:
         config = json.load(f)
         k = config["k_keyprop"]
     with open('./config/key_properties.json', 'r') as f:
         key_properties = json.load(f)
     vectordb = read_vectordb(
-        persist_directory='./data/keyprop'
+        persist_directory='./data/keyprop',
+        api_key=api_key
     )
     if model_name == 'LM Studio':
         key_property_extractor = LMStudio_extractor(vectordb=vectordb)
     elif model_name == 'gpt-4' or model_name == 'gpt-3.5-turbo':
-        key_property_extractor = chatGPT_extractor(vectordb=vectordb)
+        key_property_extractor = chatGPT_extractor(
+            vectordb=vectordb,
+            api_key=api_key
+        )
     elif model_name == 'Cohere':
-        key_property_extractor = cohere_extractor(vectordb=vectordb)
-    extracted_key_properties = key_property_extractor.extract_entities(entities=key_properties)
+        key_property_extractor = cohere_extractor(
+            vectordb=vectordb,
+            api_key=api_key
+        )
+    extracted_key_properties = key_property_extractor.extract_entities(
+        entities=key_properties
+    )
     return extracted_key_properties['Name'],\
            extracted_key_properties['Headquarters'],\
            extracted_key_properties['Number of employees'],\
@@ -106,18 +137,27 @@ def key_properties(model_name):
            extracted_key_properties['Report period']
 
 
-def embeddings_and_key_properties(file, model_name):
-    run_double_embedding(file)
+def embeddings_and_key_properties(file, model_name, api_key):
+    run_double_embedding(file, api_key)
     sleep(0.5)
-    #name, hq, employee, manager, period = key_properties(model_name)
+    #name, hq, employee, manager, period = key_properties(model_name, api_key)
     #return name, hq, employee, manager, period
     return "A", "B", "C", "D", "E"
 
 
-def uploadbutton(file, model_name):
+def uploadbutton(file, model_name, api_key=None):
+    with open('./config/model_parameter.json', 'r') as f:
+        config = json.load(f)
+        api_key = config["api_key"]
+        if api_key == "":
+            api_key = None
     if file:
         write_parameter_to_file(key='file', value=file, file='./config/file.json')
-        name, hq, employee, manager, period = embeddings_and_key_properties(file, model_name)
+        name, hq, employee, manager, period = embeddings_and_key_properties(
+            file=file,
+            model_name=model_name,
+            api_key=api_key
+        )
         return name, hq, employee, manager, period
     else:
         return "", "", "", "", ""
@@ -142,13 +182,20 @@ def read_parameter_from_file(file='./config/model_parameter_default.json'):
     return config
 
 
-def write_parameter_to_file(key, value, file='./config/model_parameter_default.json'):
+def write_parameter_to_file(key, value, file='./config/model_parameter.json'):
     with open(file, 'r') as f:
         config = json.load(f)
         config[key] = value
     with open(file, 'w') as f:
         json.dump(config, f)
 
+
+def write_model_to_file(value):
+    write_parameter_to_file('model', value)
+
+
+def write_apikey_to_file(value):
+    write_parameter_to_file('api_key', value)
 
 def write_temperature_to_file(value):
     write_parameter_to_file('temperature', value)
@@ -182,6 +229,8 @@ def read_default():
     with open('./config/model_parameter_default.json', 'r') as f:
         config = json.load(f)
     return\
+        config['model'],\
+        config['api_key'],\
         config['temperature'],\
         config['k_chat'],\
         config['k_keyprop'],\
@@ -228,10 +277,6 @@ def main():
                     msg = gr.Textbox(label="Input")
                     gr.ClearButton([msg, chat_history], value="Clear console")
                 with gr.Column(scale=2):
-                    model = gr.Dropdown(label="Model",
-                                        value="gpt-3.5-turbo",
-                                        choices=["gpt-3.5-turbo", "gpt-4", "Cohere", "LM Studio"])
-                    api_key = gr.Textbox(label="API Key")
                     gr.Markdown("### Key properties")
                     name = gr.Textbox(label="Name of the company")
                     period = gr.Textbox(label="Report period")
@@ -241,7 +286,7 @@ def main():
                     #revenue = gr.Textbox(label="Revenue/Loss")
             msg.submit(
                 fn=get_response,
-                inputs=[msg, chat_history, model],
+                inputs=[msg, chat_history],
                 outputs=[msg, chat_history]
             )
             inputfile_list.change(
@@ -251,11 +296,18 @@ def main():
             )
             inputfile_button.change(
                 fn=uploadbutton,
-                inputs=[inputfile_button, model],
+                inputs=[inputfile_button],
                 outputs=[name, hq, employee, manager, period])
 
         # Options tab
         with gr.Tab("Options"):
+            model = gr.Dropdown(
+                label="Model",
+                value="gpt-3.5-turbo",
+                choices=["gpt-3.5-turbo", "gpt-4", "Cohere", "LM Studio"],
+                interactive=True
+            )
+            api_key = gr.Textbox(label="API Key")
             with gr.Row():
                 with gr.Column():
                     gr.Markdown("### Chat parameter")
@@ -292,6 +344,14 @@ def main():
                         value=config["overlap_keyprop"],
                         interactive=True
                     )
+            model.change(
+                fn=write_model_to_file,
+                inputs=[model],
+            )
+            api_key.change(
+                fn=write_apikey_to_file,
+                inputs=[model],
+            )
             temp.change(
                 fn=write_temperature_to_file,
                 inputs=[temp],
@@ -325,6 +385,8 @@ def main():
                 fn=read_default,
                 inputs=None,
                 outputs=[
+                    model,
+                    api_key,
                     temp,
                     k_chat,
                     k_keyprop,

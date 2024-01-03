@@ -4,16 +4,30 @@ from langchain.chat_models import ChatOpenAI
 from dotenv import load_dotenv
 from langchain.chains.qa_with_sources import load_qa_with_sources_chain
 from langchain.prompts import PromptTemplate
-load_dotenv('.env')
+import yaml
+#load_dotenv('.env')
 
 
 class chatGPT_assistant():
-    def __init__(self, vectordb, model_name='gpt-3.5-turbo', temperature=0.7, k=3) -> None:
+    def __init__(
+            self,
+            vectordb,
+            model_name='gpt-3.5-turbo',
+            temperature=0,
+            k=3,
+            api_key=None
+    ) -> None:
         self.model_name = model_name
         self.temperature = temperature
         self.k = k
         self.vectordb = vectordb
         self.chat_history = []
+        if api_key:
+            self.api_key = api_key
+        else:
+            with open("./config/config.yaml", "r") as f:
+                config = yaml.safe_load(f)
+                self.api_key = config["OPENAI_API_KEY"]
     
     def query(self, query):
         # open prompt templates
@@ -32,21 +46,28 @@ class chatGPT_assistant():
             input_variables=["page_content", "source"])
 
         # Define llms
-        llm_for_chat = ChatOpenAI(temperature=self.temperature,
-                                  model=self.model_name)
-        
-        llm_for_doc_chain = OpenAI(temperature=0)
+        llm_for_chat = ChatOpenAI(
+            temperature=self.temperature,
+            model=self.model_name,
+            api_key=self.api_key
+        )
+
+        llm_for_doc_chain = OpenAI(temperature=0, api_key=self.api_key)
 
         # Define chains
-        question_generator = LLMChain(llm=llm_for_doc_chain,
-                                      prompt=SUMMARY_PROMPT)
-        
-        doc_chain = load_qa_with_sources_chain(llm_for_chat,
-                                               chain_type="stuff",
-                                               verbose=True,
-                                               prompt=QA_PROMPT,
-                                               document_prompt=DOC_PROMPT)
-        
+        question_generator = LLMChain(
+            llm=llm_for_doc_chain,
+            prompt=SUMMARY_PROMPT
+        )
+
+        doc_chain = load_qa_with_sources_chain(
+            llm_for_chat,
+            chain_type="stuff",
+            verbose=True,
+            prompt=QA_PROMPT,
+            document_prompt=DOC_PROMPT
+        )
+
         chain = ConversationalRetrievalChain(
                 retriever=self.vectordb.as_retriever(search_type="mmr", search_kwargs={'k': self.k}),
                 question_generator=question_generator,
@@ -62,13 +83,24 @@ class chatGPT_assistant():
         return result
     
 class chatGPT_extractor():
-        def __init__(self, vectordb) -> None:
+        def __init__(self, vectordb, api_key) -> None:
             self.retriever = vectordb.as_retriever(
                 search_type="similarity",
                 search_kwargs={"k": 3}
             )
+            if api_key:
+                self.api_key = api_key
+            else:
+                with open("./config/config.yaml", "r") as f:
+                    config = yaml.safe_load(f)
+                    self.api_key = config["OPENAI_API_KEY"]
 
-        def extract_single_entity(self, entity: str, description:str, llm) -> str:
+        def extract_single_entity(
+                self,
+                entity: str,
+                description: str,
+                llm
+        ) -> str:
             retrieved_docs = self.retriever.invoke(entity)
             print(entity)
             for doc in retrieved_docs:
@@ -94,7 +126,11 @@ class chatGPT_extractor():
             return response
 
         def extract_entities(self, entities: dict) -> dict:
-            llm = ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0)
+            llm = ChatOpenAI(
+                model_name="gpt-3.5-turbo",
+                temperature=0,
+                api_key=self.api_key
+            )
             result = {}
             for i in entities:
                 result[i] = self.extract_single_entity(entity=i,

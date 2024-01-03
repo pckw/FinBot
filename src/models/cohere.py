@@ -7,16 +7,19 @@ import yaml
 
 
 class cohere_assistant():
-    def __init__(self, vectordb, temperature=0, k=3) -> None:
+    def __init__(self, vectordb, temperature=0, k=3, api_key=None) -> None:
         #self.model_name = model_name
         self.temperature = temperature
         self.k = k
         self.vectordb = vectordb
         self.chat_history = []
         # read cohere api key from config.yaml
-        with open("./config/config.yaml", "r") as f:
-            config = yaml.safe_load(f)
-            self.api_key = config["COHERE_API_KEY"]
+        if api_key:
+            self.api_key = api_key
+        else:
+            with open("./config/config.yaml", "r") as f:
+                config = yaml.safe_load(f)
+                self.api_key = config["COHERE_API_KEY"]
     
     def query(self, query):
         # open prompt templates
@@ -70,9 +73,15 @@ class cohere_assistant():
    
 
 class cohere_extractor():
-        def __init__(self, vectordb) -> None:
-            self.retriever = vectordb.as_retriever(search_type="similarity", search_kwargs={"k": 3})
-            with open("config.yaml", "r", encoding="UTF-8") as f:
+    def __init__(self, vectordb, api_key) -> None:
+        self.retriever = vectordb.as_retriever(
+            search_type="similarity",
+            search_kwargs={"k": 3}
+        )
+        if api_key:
+            self.api_key = api_key
+        else:
+            with open("./config/config.yaml", "r") as f:
                 config = yaml.safe_load(f)
                 self.api_key = config["COHERE_API_KEY"]
 
