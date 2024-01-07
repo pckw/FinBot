@@ -1,19 +1,11 @@
 from langchain.embeddings import OpenAIEmbeddings
-#from langchain.embeddings.cohere import CohereEmbeddings
 from src.models.chatGPT import chatGPT_assistant, chatGPT_extractor
-from src.models.LMStudio import LMStudio_assistant, LMStudio_extractor
-from src.models.cohere import cohere_assistant, cohere_extractor
 #from src.vectordb.chroma import chromaDB
 from src.vectordb.qdrant import qdrantDB
 from src.TextDataset import TextDataset
 from src.utils.get_files_from_directory import get_files_from_directory
-# import gradio as gr
-# from gradio_pdf import PDF
 import json
 from time import sleep
-# import yaml
-# import shutil
-# import os
 
 
 def run_single_emmbedding(
@@ -28,7 +20,6 @@ def run_single_emmbedding(
         chunk_overlap=chunk_overlap,
     )
     embedding = OpenAIEmbeddings(api_key=api_key)
-    #embedding = CohereEmbeddings()
     _ = qdrantDB.create_vectordb(
         documents=documents,
         embedding=embedding,
@@ -55,7 +46,6 @@ def run_double_embedding(file, api_key):
 
 def read_vectordb(persist_directory, api_key):
     embedding = OpenAIEmbeddings(api_key=api_key)
-    #embedding = CohereEmbeddings()
     persist_directory = persist_directory
     return qdrantDB.read_vectordb(
         embedding=embedding,
@@ -76,23 +66,10 @@ def get_response(message, chat_history, api_key=None):
         persist_directory='./data/chat',
         api_key=api_key
     )
-    if model_name == 'LM Studio':
-        finbot_assistant = LMStudio_assistant(
-            vectordb=vectordb,
-            temperature=temperature,
-            k=k
-        )
-    elif model_name == 'gpt-4' or model_name == 'gpt-3.5-turbo':
+    if model_name == 'gpt-4' or model_name == 'gpt-3.5-turbo':
         finbot_assistant = chatGPT_assistant(
             vectordb=vectordb,
             model_name=model_name,
-            temperature=temperature,
-            k=k,
-            api_key=api_key
-        )
-    elif model_name == 'Cohere':
-        finbot_assistant = cohere_assistant(
-            vectordb=vectordb,
             temperature=temperature,
             k=k,
             api_key=api_key
@@ -112,16 +89,8 @@ def key_properties(model_name, api_key):
         persist_directory='./data/keyprop',
         api_key=api_key
     )
-    if model_name == 'LM Studio':
-        key_property_extractor = LMStudio_extractor(vectordb=vectordb)
-    elif model_name == 'gpt-4' or model_name == 'gpt-3.5-turbo':
-        print("SETTING UP CHATGPT")
+    if model_name == 'gpt-4' or model_name == 'gpt-3.5-turbo':
         key_property_extractor = chatGPT_extractor(
-            vectordb=vectordb,
-            api_key=api_key
-        )
-    elif model_name == 'Cohere':
-        key_property_extractor = cohere_extractor(
             vectordb=vectordb,
             api_key=api_key
         )
@@ -144,11 +113,6 @@ def embeddings_and_key_properties(file, model_name, api_key):
 
 
 def uploadbutton(file, model_name, api_key=None):
-    with open('./config/model_parameter.json', 'r') as f:
-        config = json.load(f)
-        api_key = config["api_key"]
-        if api_key == "":
-            api_key = None
     if file:
         name, hq, employee, manager, period = embeddings_and_key_properties(
             file=file,

@@ -1,5 +1,3 @@
-from langchain.embeddings import OpenAIEmbeddings
-from src.utils.get_files_from_directory import get_files_from_directory
 import gradio as gr
 from gradio_pdf import PDF
 import yaml
@@ -12,10 +10,12 @@ from src.interface import read_parameter_from_file, get_response, \
     write_overlapchat_to_file, write_overlapkeyprop_to_file, \
     read_default, display_pdf
 
-
-with open("./config/config.yaml", "r") as f:
-    config = yaml.safe_load(f)
-    api_key = config["OPENAI_API_KEY"]
+try:
+    with open("./config/config.yaml", "r") as f:
+        config = yaml.safe_load(f)
+        api_key_from_config = config["OPENAI_API_KEY"]
+except FileNotFoundError:
+    api_key_from_config = None
 
 
 def main():
@@ -26,7 +26,6 @@ def main():
             './config/model_parameter_default.json',
             './config/model_parameter.json'
         )
-    list_of_files = get_files_from_directory('./docs')
     config = read_parameter_from_file()
     with gr.Blocks() as iface:
         gr.Markdown("# FinBot")
@@ -63,10 +62,15 @@ def main():
             model = gr.Dropdown(
                 label="Model",
                 value="gpt-3.5-turbo",
-                choices=["gpt-3.5-turbo", "gpt-4", "Cohere", "LM Studio"],
+                choices=["gpt-3.5-turbo", "gpt-4"],
                 interactive=True
             )
-            api_key = gr.Textbox(label="API Key", interactive=True)
+            api_key = gr.Textbox(
+                value=api_key_from_config,
+                label="API Key",
+                interactive=True,
+                type="password"
+                )
             with gr.Row():
                 with gr.Column():
                     gr.Markdown("### Chat parameter")
