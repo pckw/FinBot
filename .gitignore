@@ -13,7 +13,9 @@ __pycache__
 .DS_Store
 *swp
 
+# config files
 config.yaml
+model_parameter.json
 
 # jupyter notebooks
 *.ipynb
