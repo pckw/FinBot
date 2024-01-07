@@ -75,7 +75,7 @@ def main():
                     gr.Markdown("### Chat parameter")
                     k_chat = gr.Textbox(
                         label="Number of retrieved chunks",
-                        value=config["chunk_chat"],
+                        value=config["k_chat"],
                         interactive=True
                     )
                     chunk_size_chat = gr.Textbox(
@@ -93,7 +93,7 @@ def main():
                     gr.Markdown("### Key properties extraction parameter")
                     k_keyprop = gr.Textbox(
                         label="Number of retrieved chunks",
-                        value=config["chunk_keyprop"],
+                        value=config["k_keyprop"],
                         interactive=True
                     )
                     chunk_size_keyprop = gr.Textbox(
@@ -117,7 +117,7 @@ def main():
             ## Define actions ##
             msg.submit(
                 fn=get_response,
-                inputs=[msg, chat_history],
+                inputs=[msg, chat_history, api_key],
                 outputs=[msg, chat_history]
             )
             inputfile_button.change(
@@ -162,7 +162,7 @@ def main():
             )
             reset.click(
                 fn=read_default,
-                inputs=None,
+                inputs=[],
                 outputs=[
                     model,
                     api_key,
@@ -172,7 +172,8 @@ def main():
                     chunk_size_chat,
                     chunk_size_keyprop,
                     overlap_chat,
-                    overlap_keyprop
+                    overlap_keyprop,
+                    api_key
                 ]
             )
         inputfile_button.change(

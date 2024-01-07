@@ -69,7 +69,10 @@ class chatGPT_assistant():
         )
 
         chain = ConversationalRetrievalChain(
-                retriever=self.vectordb.as_retriever(search_type="mmr", search_kwargs={'k': self.k}),
+                retriever=self.vectordb.as_retriever(
+                    search_type="similarity",
+                    search_kwargs={'k': self.k}
+                    ),
                 question_generator=question_generator,
                 combine_docs_chain=doc_chain,
                 rephrase_question=False,

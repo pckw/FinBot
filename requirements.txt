@@ -5,3 +5,5 @@ openai
 chromadb
 tiktoken
 gradio
+gradio_pdf
+qdrant_client

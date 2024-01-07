@@ -6,6 +6,8 @@ from src.TextDataset import TextDataset
 from src.utils.get_files_from_directory import get_files_from_directory
 import json
 from time import sleep
+import yaml
+
 
 
 def run_single_emmbedding(
@@ -53,15 +55,12 @@ def read_vectordb(persist_directory, api_key):
     )
 
 
-def get_response(message, chat_history, api_key=None):
+def get_response(message, chat_history, api_key):
     with open('./config/model_parameter.json', 'r') as f:
         config = json.load(f)
         model_name = config["model_name"]
         k = config["k_chat"]
         temperature = config["temperature"]
-        api_key = config["api_key"]
-        if api_key == "":
-            api_key = None
     vectordb = read_vectordb(
         persist_directory='./data/chat',
         api_key=api_key
@@ -176,7 +175,13 @@ def write_overlapkeyprop_to_file(value):
     write_parameter_to_file('overlap_keyprop', value)
 
 
-def read_default():
+def read_default(api_key):
+    try:
+        with open("./config/config.yaml", "r") as f:
+            config = yaml.safe_load(f)
+            api_key_from_config = config["OPENAI_API_KEY"]
+    except FileNotFoundError:
+        api_key_from_config = None
     with open('./config/model_parameter_default.json', 'r') as f:
         config = json.load(f)
     return\
@@ -188,7 +193,8 @@ def read_default():
         config['chunk_chat'],\
         config['chunk_keyprop'],\
         config['overlap_chat'],\
-        config['overlap_keyprop']
+        config['overlap_keyprop'],\
+        api_key_from_config
 
 
 def display_pdf(file):
