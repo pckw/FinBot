@@ -10,15 +10,14 @@ from src.interface import read_parameter_from_file, get_response, \
     write_overlapchat_to_file, write_overlapkeyprop_to_file, \
     read_default, display_pdf
 
-try:
-    with open("./config/config.yaml", "r") as f:
-        config = yaml.safe_load(f)
-        api_key_from_config = config["OPENAI_API_KEY"]
-except FileNotFoundError:
-    api_key_from_config = None
-
 
 def main():
+    try:
+        with open("./config/config.yaml", "r") as f:
+            config = yaml.safe_load(f)
+            api_key_from_config = config["OPENAI_API_KEY"]
+    except FileNotFoundError:
+        api_key_from_config = None
     # check if model_parameter.json exists
     # and copy model_parameter_default.json otherwise
     if not os.path.exists('./config/model_parameter.json'):
