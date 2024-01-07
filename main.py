@@ -1,142 +1,182 @@
 from langchain.embeddings import OpenAIEmbeddings
-from langchain.embeddings.cohere import CohereEmbeddings
-from src.models.chatGPT import chatGPT_assistant, chatGPT_extractor
-from src.models.LMStudio import LMStudio_assistant, LMStudio_extractor
-from src.models.cohere import cohere_assistant, cohere_extractor
-from src.vectordb.chroma import chromaDB
-from src.vectordb.qdrant import qdrantDB
-from src.TextDataset import TextDataset
 from src.utils.get_files_from_directory import get_files_from_directory
 import gradio as gr
-import json
-from time import sleep
+from gradio_pdf import PDF
+import yaml
+import shutil
+import os
+from src.interface import read_parameter_from_file, get_response, \
+    uploadbutton, write_model_to_file, write_apikey_to_file, \
+    write_temperature_to_file, write_kchat_to_file, write_kkeyprop_to_file, \
+    write_chunkchat_to_file, write_chunkkeyprop_to_file, \
+    write_overlapchat_to_file, write_overlapkeyprop_to_file, \
+    read_default, display_pdf
 
 
-def run_single_emmbedding(file, persist_directory, chunk_size, chunk_overlap):
-    documents = TextDataset(file).load(
-        chunk_size=chunk_size,
-        chunk_overlap=chunk_overlap,
-    )
-    embedding = OpenAIEmbeddings()
-    #embedding = CohereEmbeddings()
-    _ = qdrantDB.create_vectordb(
-        documents=documents,
-        embedding=embedding,
-        persist_directory=persist_directory,
-    )
-
-
-def run_double_embedding(file):
-    run_single_emmbedding(
-        file=file,
-        persist_directory='./data/keyprop',
-        chunk_size=300,
-        chunk_overlap=0,
-    )
-    run_single_emmbedding(
-        file=file,
-        persist_directory='./data/chat',
-        chunk_size=1500,
-        chunk_overlap=200
-    )
-
-
-def read_vectordb(persist_directory):
-    embedding = OpenAIEmbeddings()
-    #embedding = CohereEmbeddings()
-    persist_directory = persist_directory
-    return qdrantDB.read_vectordb(
-        embedding=embedding,
-        persist_directory=persist_directory
-    )
-
-
-def get_response(message, chat_history, model_name, temperature):
-    vectordb = read_vectordb(
-        persist_directory='./data/chat')
-    if model_name == 'LM Studio':
-        finbot_assistant = LMStudio_assistant(vectordb=vectordb,
-                                            temperature=temperature,
-                                            k=3)
-    elif model_name == 'gpt-4' or model_name == 'gpt-3.5-turbo':
-        finbot_assistant = chatGPT_assistant(
-            vectordb=vectordb,
-            model_name=model_name,
-            temperature=temperature,
-            k=3
-        )
-    elif model_name == 'Cohere':
-        finbot_assistant = cohere_assistant(
-            vectordb=vectordb,
-            temperature=temperature,
-            k=3
-        )
-    result = finbot_assistant.query(message)
-    chat_history.append((message, result["answer"]))
-    return "", chat_history
-
-def key_properties(model_name):
-    with open('key_properties.json','r') as f:
-        key_properties = json.load(f)
-    vectordb = read_vectordb(
-        persist_directory='./data/keyprop'
-    )
-    if model_name == 'LM Studio':
-        key_property_extractor = LMStudio_extractor(vectordb=vectordb)
-    elif model_name == 'gpt-4' or model_name == 'gpt-3.5-turbo':
-        key_property_extractor = chatGPT_extractor(vectordb=vectordb)
-    elif model_name == 'Cohere':
-        key_property_extractor = cohere_extractor(vectordb=vectordb)
-    extracted_key_properties = key_property_extractor.extract_entities(entities=key_properties)
-    return extracted_key_properties['Name'],\
-           extracted_key_properties['Headquarters'],\
-           extracted_key_properties['Number of employees'],\
-           extracted_key_properties['Managing directors']
-
-
-def embeddings_and_key_properties(file, model_name):
-    file = "./docs/"+file
-    run_double_embedding(file)
-    sleep(0.5)
-    name, hq, employee, manager = key_properties(model_name)
-    return name, hq, employee, manager
-    #return "A", "B", "C", "D"
+with open("./config/config.yaml", "r") as f:
+    config = yaml.safe_load(f)
+    api_key = config["OPENAI_API_KEY"]
 
 
 def main():
-    list_of_files=get_files_from_directory('./docs')
+    # check if model_parameter.json exists
+    # and copy model_parameter_default.json otherwise
+    if not os.path.exists('./config/model_parameter.json'):
+        shutil.copy(
+            './config/model_parameter_default.json',
+            './config/model_parameter.json'
+        )
+    list_of_files = get_files_from_directory('./docs')
+    config = read_parameter_from_file()
     with gr.Blocks() as iface:
         gr.Markdown("# FinBot")
-        with gr.Row():
-            with gr.Column(scale=6):
-                with gr.Row():
-                    with gr.Column():
-                        inputfile = gr.Dropdown(label="Input file", choices=list_of_files)
-                chat_history = gr.Chatbot()
-                msg = gr.Textbox(label="Input")
-                gr.ClearButton([msg, chat_history], value="Clear console")
-            with gr.Column(scale=2):
-                model = gr.Dropdown(label="Model",
-                                    value="gpt-3.5-turbo",
-                                    choices=["gpt-3.5-turbo", "gpt-4", "Cohere", "LM Studio"])
-                api_key = gr.Textbox(label="API Key")
-                temp = gr.Slider(label="Temperature", value=0)
-                gr.Markdown("### Key properties")
-                name = gr.Textbox(label="Name of the company")
-                hq = gr.Textbox(label="Headquarter")
-                employee = gr.Textbox(label="Number of employee")
-                manager = gr.Textbox(label="Managing director(s)")
-                #revenue = gr.Textbox(label="Revenue/Loss")
-        msg.submit(fn=get_response,
-                   inputs=[msg, chat_history, model, temp],
-                   outputs=[msg, chat_history])
-        inputfile.change(
-            fn=embeddings_and_key_properties,
-            inputs=[inputfile, model],
-            outputs=[name, hq, employee, manager]
+        # Chat tab
+        with gr.Tab("Chat"):
+            with gr.Row():
+            # add another box next to inputfile_list
+                inputfile_button = gr.File(
+                    label="Upload a file",
+                    file_types=[".pdf"],
+                    container=True,
+                    #variant="primary",
+                    #size="sm",
+                    scale=1,
+                    type="filepath"
+                )
+            with gr.Row():
+                with gr.Column(scale=6):
+                    chat_history = gr.Chatbot()
+                    msg = gr.Textbox(label="Input")
+                    gr.ClearButton([msg, chat_history], value="Clear console")
+                with gr.Column(scale=2):
+                    gr.Markdown("### Key properties")
+                    name = gr.Textbox(label="Name of the company")
+                    period = gr.Textbox(label="Report period")
+                    hq = gr.Textbox(label="Headquarter")
+                    employee = gr.Textbox(label="Number of employee")
+                    manager = gr.Textbox(label="Managing director(s)")
+                    #revenue = gr.Textbox(label="Revenue/Loss")
+
+
+        # Options tab
+        with gr.Tab("Options"):
+            model = gr.Dropdown(
+                label="Model",
+                value="gpt-3.5-turbo",
+                choices=["gpt-3.5-turbo", "gpt-4", "Cohere", "LM Studio"],
+                interactive=True
+            )
+            api_key = gr.Textbox(label="API Key", interactive=True)
+            with gr.Row():
+                with gr.Column():
+                    gr.Markdown("### Chat parameter")
+                    k_chat = gr.Textbox(
+                        label="Number of retrieved chunks",
+                        value=config["chunk_chat"],
+                        interactive=True
+                    )
+                    chunk_size_chat = gr.Textbox(
+                        label="Size of retrieved chunks",
+                        value=config["chunk_chat"],
+                        interactive=True
+                    )
+                    overlap_chat = gr.Textbox(
+                        label="Overlap of retrieved chunks",
+                        value=config["overlap_chat"],
+                        interactive=True
+                    )
+                    temp = gr.Slider(label="Temperature", value=config["temperature"])
+                with gr.Column():
+                    gr.Markdown("### Key properties extraction parameter")
+                    k_keyprop = gr.Textbox(
+                        label="Number of retrieved chunks",
+                        value=config["chunk_keyprop"],
+                        interactive=True
+                    )
+                    chunk_size_keyprop = gr.Textbox(
+                        label="Size of retrieved chunks",
+                        value=config["chunk_keyprop"],
+                        interactive=True
+                    )
+                    overlap_keyprop = gr.Textbox(
+                        label="Overlap of retrieved chunks",
+                        value=config["overlap_keyprop"],
+                        interactive=True
+                    )
+            reset = gr.Button("Reset to default")
+        with gr.Tab("PDF"):
+            gr.Markdown("### PDF")
+            pdf = PDF(
+                label="Upload a PDF",
+                interactive=False,
+                height=1000
+            )
+            ## Define actions ##
+            msg.submit(
+                fn=get_response,
+                inputs=[msg, chat_history],
+                outputs=[msg, chat_history]
+            )
+            inputfile_button.change(
+                fn=uploadbutton,
+                inputs=[inputfile_button, model, api_key],
+                outputs=[name, hq, employee, manager, period])
+            model.change(
+                fn=write_model_to_file,
+                inputs=[model],
+            )
+            api_key.change(
+                fn=write_apikey_to_file,
+                inputs=[model],
+            )
+            temp.change(
+                fn=write_temperature_to_file,
+                inputs=[temp],
+            )
+            k_chat.change(
+                fn=write_kchat_to_file,
+                inputs=[k_chat],
+            )
+            k_keyprop.change(
+                fn=write_kkeyprop_to_file,
+                inputs=[k_keyprop],
+            )
+            chunk_size_chat.change(
+                fn=write_chunkchat_to_file,
+                inputs=[chunk_size_chat],
+            )
+            chunk_size_keyprop.change(
+                fn=write_chunkkeyprop_to_file,
+                inputs=[chunk_size_keyprop],
+            )
+            overlap_chat.change(
+                fn=write_overlapchat_to_file,
+                inputs=[overlap_chat],
+            )
+            overlap_keyprop.change(
+                fn=write_overlapkeyprop_to_file,
+                inputs=[overlap_keyprop],
+            )
+            reset.click(
+                fn=read_default,
+                inputs=None,
+                outputs=[
+                    model,
+                    api_key,
+                    temp,
+                    k_chat,
+                    k_keyprop,
+                    chunk_size_chat,
+                    chunk_size_keyprop,
+                    overlap_chat,
+                    overlap_keyprop
+                ]
+            )
+        inputfile_button.change(
+            fn=display_pdf,
+            inputs=[inputfile_button],
+            outputs=[pdf],
         )
     iface.launch()
-
-
 if __name__ == "__main__":
     main()

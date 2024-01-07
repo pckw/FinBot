@@ -16,7 +16,7 @@ load_dotenv('.env')
 file = "./docs/Lillebräu_2021.pdf"
 #file = "./docs/Kiels_Fitness_2021.pdf"
 
-with open('key_properties.json','r') as f:
+with open('./config/key_properties.json', 'r') as f:
     key_properties = json.load(f)
 
 
