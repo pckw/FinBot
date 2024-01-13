@@ -6,19 +6,20 @@ import yaml
 import shutil
 import os
 from src.interface import read_parameter_from_file, get_response, \
-    uploadbutton, write_model_to_file, write_apikey_to_file, \
+    uploadbutton, write_model_to_file, \
     write_temperature_to_file, write_kchat_to_file, write_kkeyprop_to_file, \
     write_chunkchat_to_file, write_chunkkeyprop_to_file, \
     write_overlapchat_to_file, write_overlapkeyprop_to_file, \
     read_default, display_pdf
 
 
-with open("./config/config.yaml", "r") as f:
-    config = yaml.safe_load(f)
-    api_key = config["OPENAI_API_KEY"]
-
-
 def main():
+    try:
+        with open("./config/config.yaml", "r") as f:
+            config = yaml.safe_load(f)
+            api_key_from_config = config["OPENAI_API_KEY"]
+    except FileNotFoundError:
+        api_key_from_config = None
     # check if model_parameter.json exists
     # and copy model_parameter_default.json otherwise
     if not os.path.exists('./config/model_parameter.json'):
@@ -26,7 +27,6 @@ def main():
             './config/model_parameter_default.json',
             './config/model_parameter.json'
         )
-    list_of_files = get_files_from_directory('./docs')
     config = read_parameter_from_file()
     with gr.Blocks() as iface:
         gr.Markdown("# FinBot")
@@ -66,13 +66,18 @@ def main():
                 choices=["gpt-3.5-turbo", "gpt-4", "Cohere", "LM Studio"],
                 interactive=True
             )
-            api_key = gr.Textbox(label="API Key", interactive=True)
+            api_key = gr.Textbox(
+                value=api_key_from_config,
+                label="API Key",
+                interactive=True,
+                type="password"
+                )
             with gr.Row():
                 with gr.Column():
                     gr.Markdown("### Chat parameter")
                     k_chat = gr.Textbox(
                         label="Number of retrieved chunks",
-                        value=config["chunk_chat"],
+                        value=config["k_chat"],
                         interactive=True
                     )
                     chunk_size_chat = gr.Textbox(
@@ -90,7 +95,7 @@ def main():
                     gr.Markdown("### Key properties extraction parameter")
                     k_keyprop = gr.Textbox(
                         label="Number of retrieved chunks",
-                        value=config["chunk_keyprop"],
+                        value=config["k_keyprop"],
                         interactive=True
                     )
                     chunk_size_keyprop = gr.Textbox(
@@ -114,7 +119,7 @@ def main():
             ## Define actions ##
             msg.submit(
                 fn=get_response,
-                inputs=[msg, chat_history],
+                inputs=[msg, chat_history, api_key],
                 outputs=[msg, chat_history]
             )
             inputfile_button.change(
@@ -125,10 +130,10 @@ def main():
                 fn=write_model_to_file,
                 inputs=[model],
             )
-            api_key.change(
-                fn=write_apikey_to_file,
-                inputs=[model],
-            )
+            # api_key.change(
+            #     fn=write_apikey_to_file,
+            #     inputs=[model],
+            # )
             temp.change(
                 fn=write_temperature_to_file,
                 inputs=[temp],
@@ -162,14 +167,13 @@ def main():
                 inputs=None,
                 outputs=[
                     model,
-                    api_key,
                     temp,
                     k_chat,
                     k_keyprop,
                     chunk_size_chat,
                     chunk_size_keyprop,
                     overlap_chat,
-                    overlap_keyprop
+                    overlap_keyprop,
                 ]
             )
         inputfile_button.change(
