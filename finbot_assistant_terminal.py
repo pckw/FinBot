@@ -1,24 +1,27 @@
 import os
+import yaml
 import sys
 from langchain.embeddings import OpenAIEmbeddings
-from dotenv import load_dotenv
 import json
 from src.models.chatGPT import chatGPT_assistant, chatGPT_extractor
 from src.models.LMStudio import LMStudio_assistant, LMStudio_extractor
 from src.vectordb.chroma import chromaDB
 from src.vectordb.qdrant import qdrantDB
 from src.TextDataset import TextDataset
-from src.utils.get_source_pdf_from_directory import get_source_pdf_from_directory
 
-load_dotenv('.env')
 
 # Load documents
-file = "./docs/Lillebräu_2021.pdf"
-#file = "./docs/Kiels_Fitness_2021.pdf"
+file = "./docs/Kiels_Fitness_2021.pdf"
 
 with open('./config/key_properties.json', 'r') as f:
     key_properties = json.load(f)
 
+try:
+    with open("./config/config.yaml", "r") as f:
+        config = yaml.safe_load(f)
+        api_key = config["OPENAI_API_KEY"]
+except FileNotFoundError:
+    api_key = None
 
 def create_vectordb(file, persist_directory, chunk_size, chunk_overlap):
     documents = TextDataset(file).load(
@@ -26,7 +29,7 @@ def create_vectordb(file, persist_directory, chunk_size, chunk_overlap):
         chunk_overlap=chunk_overlap
     )
     # Initialize the vector database
-    embedding = OpenAIEmbeddings()
+    embedding = OpenAIEmbeddings(api_key=api_key)
     vectordb = qdrantDB.create_vectordb(
         documents,
         embedding,
@@ -55,26 +58,20 @@ vectordb_keyprop = create_vectordb(
     chunk_overlap=0,
     )
 
-#vectordb = chromaDB.read_vectordb(embedding, persist_directory=source_directory)
-
-# query it
-# query = "Wie heißen die Geschäftsführer?"
-# retriever = vectordb.as_retriever(search_type='mmr', search_kwargs={"k": 3})
-# docs=retriever.get_relevant_documents(query)
-
 # Initialize the assistant
-model_name='gpt-3.5-turbo'
-#model_name='gpt-4'
+model_name = 'gpt-3.5-turbo'
+#model_name = 'gpt-4'
 finbot_assistant = chatGPT_assistant(vectordb=vectordb_chat,
                                      model_name=model_name,
                                      temperature=0,
-                                     k=3)
+                                     k=3,
+                                     api_key=api_key)
 # finbot_assistant = LMStudio_assistant(vectordb=vectordb_chat,
 #                                      model_name=model_name,
 #                                      temperature=0,
 #                                      k=3)
 
-extractor = chatGPT_extractor(vectordb=vectordb_keyprop)
+extractor = chatGPT_extractor(vectordb=vectordb_keyprop, api_key=api_key)
 #extractor = LMStudio_extractor(vectordb=vectordb_keyprop)
 extracted_key_properties = extractor.extract_entities(entities=key_properties)
 

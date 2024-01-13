@@ -1,22 +1,36 @@
 from langchain.chains import ConversationalRetrievalChain, LLMChain
 from langchain.llms import OpenAI
 from langchain.chat_models import ChatOpenAI
-from dotenv import load_dotenv
 from langchain.chains.qa_with_sources import load_qa_with_sources_chain
 from langchain.prompts import PromptTemplate
 import yaml
+from typing import Union
 #load_dotenv('.env')
 
 
 class chatGPT_assistant():
     def __init__(
             self,
-            vectordb,
-            model_name='gpt-3.5-turbo',
-            temperature=0,
-            k=3,
-            api_key=None
+            vectordb: object,
+            model_name: str = 'gpt-3.5-turbo',
+            temperature: int =0,
+            k: int = 3,
+            api_key: Union[str, None] = None
     ) -> None:
+        """
+        Initialize the ChatGPTClient object.
+
+        Parameters:
+            vectordb (VectorDB): An instance of a VectorDB class.
+            model_name (str): The name of the GPT model to use. Defaults to 'gpt-3.5-turbo'.
+            temperature (int): The temperature to use for generating responses. Defaults to 0.
+            k (int): The number of top-k tokens to consider for generating responses. Defaults to 3.
+            api_key (str): The API key to use for making requests to the OpenAI API. If not provided, it is
+                read from the "./config/config.yaml" file.
+
+        Returns:
+            None
+        """
         self.model_name = model_name
         self.temperature = temperature
         self.k = k
@@ -29,7 +43,19 @@ class chatGPT_assistant():
                 config = yaml.safe_load(f)
                 self.api_key = config["OPENAI_API_KEY"]
     
-    def query(self, query):
+    def query(self, query: str) -> dict:
+        """
+        Executes a query using the provided `query` parameter.
+
+        Args:
+            query (str): The query to be executed.
+
+        Returns:
+            dict: The result of the query, containing the answer to the query.
+
+        Raises:
+            FileNotFoundError: If the template files for prompt generation are not found.
+        """
         # open prompt templates
         with open("prompt_templates/few_shot_doc_prompt_de_chatgpt.txt") as f:
             template_few_shot_doc = f.read()
@@ -42,8 +68,8 @@ class chatGPT_assistant():
         QA_PROMPT = PromptTemplate(template=template_few_shot_doc,
                                    input_variables=["summaries", "question"])
         DOC_PROMPT = PromptTemplate(
-            template="Content: {page_content}\nSource: {source}",
-            input_variables=["page_content", "source"])
+            template="Content: {page_content}",
+            input_variables=["page_content"])
 
         # Define llms
         llm_for_chat = ChatOpenAI(
@@ -69,7 +95,10 @@ class chatGPT_assistant():
         )
 
         chain = ConversationalRetrievalChain(
-                retriever=self.vectordb.as_retriever(search_type="mmr", search_kwargs={'k': self.k}),
+                retriever=self.vectordb.as_retriever(
+                    search_type="similarity",
+                    search_kwargs={'k': self.k}
+                ),
                 question_generator=question_generator,
                 combine_docs_chain=doc_chain,
                 rephrase_question=False,
@@ -81,9 +110,24 @@ class chatGPT_assistant():
         #result = {"answer": "Hello World"}
         self.chat_history.append((query, result["answer"])) # add query and result
         return result
-    
+
+
 class chatGPT_extractor():
-        def __init__(self, vectordb, api_key) -> None:
+        def __init__(
+                self,
+                vectordb: object, 
+                api_key: Union[str, None]
+        ) -> None:
+            """
+            Initialize the class with a vector database and an API key.
+
+            Parameters:
+                vectordb (VectorDB): The vector database used for retrieval.
+                api_key (str): The API key used for authentication.
+
+            Returns:
+                None
+            """
             self.retriever = vectordb.as_retriever(
                 search_type="similarity",
                 search_kwargs={"k": 3}
@@ -99,8 +143,19 @@ class chatGPT_extractor():
                 self,
                 entity: str,
                 description: str,
-                llm
+                llm: object
         ) -> str:
+            """
+            Extract a single entity from a description.
+
+            Args:
+                entity (str): The entity to extract.
+                description (str): The description of the entity.
+                llm: The LLM object.
+
+            Returns:
+                str: The extracted information as a string.
+            """
             retrieved_docs = self.retriever.invoke(entity)
             print(entity)
             for doc in retrieved_docs:
@@ -126,6 +181,16 @@ class chatGPT_extractor():
             return response
 
         def extract_entities(self, entities: dict) -> dict:
+            """
+            Extracts entities from a given dictionary of entities.
+
+            Args:
+                entities (dict): A dictionary containing entities to be extracted.
+
+            Returns:
+                dict: A dictionary containing the extracted entities.
+
+            """
             llm = ChatOpenAI(
                 model_name="gpt-3.5-turbo",
                 temperature=0,

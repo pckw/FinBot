@@ -1,11 +1,31 @@
 from langchain.document_loaders import PyPDFLoader
-from langchain.text_splitter import RecursiveCharacterTextSplitter, CharacterTextSplitter
+from langchain.text_splitter import RecursiveCharacterTextSplitter  #, CharacterTextSplitter
+
 
 class TextDataset():
-    def __init__(self, path):
+    def __init__(self, path: str) -> None:
+        """
+        Initializes an instance of the class.
+
+        Args:
+            path (str): The path to the file.
+
+        Returns:
+            None
+        """
         self.path = path
 
-    def load(self, chunk_size, chunk_overlap):
+    def load(self, chunk_size: int, chunk_overlap: int) -> list:
+        """
+        Load the document using a PyPDFLoader and split the text into chunks using a RecursiveCharacterTextSplitter.
+        
+        Parameters:
+            chunk_size (int): The size of each text chunk.
+            chunk_overlap (int): The number of characters overlapping between adjacent chunks.
+        
+        Returns:
+            list: A list of documents, each represented as a string.
+        """
         # load the document
         loader = PyPDFLoader(self.path)
         documents = loader.load()

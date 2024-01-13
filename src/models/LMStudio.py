@@ -1,18 +1,23 @@
-from langchain.chains import ConversationalRetrievalChain, LLMChain
-from langchain.llms import OpenAI
 from openai import OpenAI as OpenAI_native
-from langchain.chat_models import ChatOpenAI
 from dotenv import load_dotenv
-from langchain.chains.qa_with_sources import load_qa_with_sources_chain
-from langchain.prompts import PromptTemplate
 from src.utils.fill_prompt_template import fill_prompt_template
 import json
 import copy
-load_dotenv('.env')
 
 
 class LMStudio_assistant():
-    def __init__(self, vectordb, temperature=0, k=3) -> None:
+    def __init__(self, vectordb, temperature: int = 0, k: int = 3) -> None:
+        """
+        Initializes an instance of the class.
+
+        Args:
+            vectordb (object): A description of the parameter vectordb.
+            temperature (int, optional): A description of the parameter temperature. Defaults to 0.
+            k (int, optional): A description of the parameter k. Defaults to 3.
+
+        Returns:
+            None
+        """
         self.temperature = temperature
         self.k = k
         self.vectordb = vectordb
@@ -24,7 +29,16 @@ class LMStudio_assistant():
         self.chat_history = messages[:-2]
         self.prompt_template = messages[-2:]
 
-    def query(self, query):
+    def query(self, query: str) -> dict:
+        """
+        Retrieves documents based on the given query, constructs a prompt from a template, invokes a language model, and returns the final answer.
+
+        Parameters:
+            query (str): The query string used to retrieve documents.
+
+        Returns:
+            dict: A dictionary containing the answer as a string.
+        """
         # Retrieve doctuments
         retrieved_docs = self.retriever.invoke(query)
         # for doc in retrieved_docs:
@@ -52,10 +66,34 @@ class LMStudio_assistant():
         return {"answer": response.choices[0].message.content}
 
 class LMStudio_extractor():
-    def __init__(self, vectordb) -> None:
-        self.retriever = vectordb.as_retriever(search_type="similarity", search_kwargs={"k": 3})
+    def __init__(self, vectordb: object) -> None:
+        """
+        Initializes the class instance.
 
-    def extract_single_entity(self, entity: str, description: str, llm) -> str:
+        Args:
+            vectordb: A vectordb object.
+
+        Returns:
+            None
+        """
+        self.retriever = vectordb.as_retriever(
+            search_type="similarity",
+            search_kwargs={"k": 3}
+        )
+
+    def extract_single_entity(self, entity: str, description: str, llm: object) -> str:
+        """
+        Extracts a single entity from the given `entity` and `description` using the local language model `llm`.
+
+        Args:
+            entity (str): The name of the entity to extract.
+            description (str): The description of the entity to extract.
+            llm: The local language model to use for extraction.
+
+        Returns:
+            str: The extracted content.
+
+        """
         retrieved_docs = self.retriever.invoke(entity)
         retrieved_docs = ';'.join([doc.page_content for doc in retrieved_docs])
         with open('prompt_templates/few_shot_extractor_prompt_de_mistral.json', 'r') as f:
@@ -70,6 +108,18 @@ class LMStudio_extractor():
         return response.choices[0].message.content
 
     def extract_entities(self, entities: dict) -> dict:
+        """
+        Extracts entities from a dictionary of entities.
+
+        Args:
+            entities (dict): A dictionary containing the entities to be extracted.
+
+        Returns:
+            dict: A dictionary containing the extracted entities.
+
+        Raises:
+            None
+        """
         llm = OpenAI_native(base_url="http://localhost:1234/v1", api_key="not-needed")
         result = {}
         for i in entities:
