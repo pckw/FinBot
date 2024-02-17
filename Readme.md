@@ -1,5 +1,5 @@
 # Finbot - A chatbot for financial data
-A chatbot optimized to analyse and summarize financial reports including charts and tables.
+A chatbot optimized to analyse and summarize financial reports including tables.
 
 ## What is FinBot
 
@@ -43,7 +43,12 @@ and open the provided local link in your browser.
 To get started just upload a report you want to chat with. The repository includes a few exmaple reports that you can find under `docs`. For example the 2021 report of KIELS Fitness. Once you select a report, the key properties are extracted. Use the chat interface to query your report.
 ![Chat](./screenshots/chat.png)
 
-The tab `Options` allows you to change the model, provide your API key of needed or adjust model parameter. If you provided your API keys via config/config.yaml, the API key should be filled automatically. Otherwise provide your key manually. The model parameter can be reset to a default set by clicking on `Reset to default`. Change the file `config/model_parameter_default.json` to change the default parameter.
+The tab `Options` allows you to change the model, provide your API key if needed or adjust model parameter. If you provided your API keys via config/config.yaml, the API key should be filled automatically. Otherwise provide your key manually. The model parameter can be reset to a default set, by clicking on `Reset to default`. Change the file `config/model_parameter_default.json` to change the default parameters.
+FinBot supports the following models
+- GPT 3.5-turbo
+- GPT 4
+- Cohere
+- Any local model hosted with LM Studio (see below)
 
 ![Options](./screenshots/options.png)
 
@@ -53,6 +58,6 @@ The tab `PDF` allows you to read your uploaded pdf.
 
 ## How to use FinBot with a local model hosted via LM Studio
 
-You can connect FinBot to a local model run with [LM Studio](https://lmstudio.ai/). Select a downloaded model of your choice and start your local server in LM Studio. Make sure the url of your server is `http://localhost:1234/v1`. Once your server is running you can use the model with FinBot by selecting `LM Studio` as your model in the `Options` tab. No API key required.
+You can connect FinBot to a local model hosted with [LM Studio](https://lmstudio.ai/). Select a downloaded model of your choice and start your local server in LM Studio. Make sure the url of your server is `http://localhost:1234/v1`. Once your server is running you can use the model with FinBot by selecting `LM Studio` as your model in the `Options` tab. No API key required.
 
 ![lmstudio](./screenshots/lmstudio.png)
