@@ -1,4 +1,4 @@
-# Finbot - A chatbot for financial data
+# Finbot - A chatbot for financial reports
 A chatbot optimized to analyse and summarize financial reports including tables.
 
 ## What is FinBot
