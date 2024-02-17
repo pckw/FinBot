@@ -53,6 +53,6 @@ The tab `PDF` allows you to read your uploaded pdf.
 
 ## How to use FinBot with a local model hosted via LM Studio
 
-You can connect FinBot to a local model run with LM Studio[https://lmstudio.ai/]. Select a downloaded model of your choice and start your local server in LM Studio. Make sure the url of your server is `http://localhost:1234/v1`. Once your server is running you can use the model with FinBot by selecting `LM Studio` as your model in the `Options` tab. No API key required.
+You can connect FinBot to a local model run with [LM Studio](https://lmstudio.ai/). Select a downloaded model of your choice and start your local server in LM Studio. Make sure the url of your server is `http://localhost:1234/v1`. Once your server is running you can use the model with FinBot by selecting `LM Studio` as your model in the `Options` tab. No API key required.
 
 ![lmstudio](./screenshots/lmstudio.png)
