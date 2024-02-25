@@ -32,7 +32,7 @@ Create config/config.yaml and add your API keys. This is optional. You may also 
 OPENAI_API_KEY=sk-
 COHERE_API_KEY=
 ```
-To run FinBot run
+To run FinBot execute
 ```python
 python run_finbot.py
 ```
@@ -52,9 +52,9 @@ FinBot supports the following models
 
 ![Options](./screenshots/options.png)
 
-The tab `PDF` allows you to read your uploaded pdf.
+The tab `PDF` displays your uploaded pdf.
 
-![pdf](./screenshots/pdfview.png)
+![pdf](./screenshots/pdfviewer.png)
 
 ## How to use FinBot with a local model hosted via LM Studio
 
